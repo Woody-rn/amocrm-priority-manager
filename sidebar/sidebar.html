@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../shared/common.css">
+    <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Статистика -->
+        <div class="card stats">
+            <h2>Статистика</h2>
+            <div id="statsList"></div>
+        </div>
+
+        <!-- Клиенты -->
+        <div class="card clients">
+            <h2>Все клиенты</h2>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Поиск по всем полям..." autocomplete="off">
+                <button id="clearSearchBtn" class="clear-search-btn" title="Очистить">✕</button>
+            </div>
+            
+            <div class="filters">
+                <button data-filter="all" class="active">Все</button>
+                <button data-filter="green">🔥</button>
+                <button data-filter="purple">⭐</button>
+                <button data-filter="teal">🔄</button>
+                <button data-filter="blue">🆕</button>
+                <button data-filter="yellow">🤔</button>
+                <button data-filter="orange">🥶</button>
+                <button data-filter="red">💀</button>
+            </div>
+            
+            <div id="clientsList"></div>
+        </div>
+
+        <!-- Справка (сворачиваемая) -->
+        <div class="card help-card">
+            <div class="help-header" id="helpToggle">
+                <h2>ℹ️ Справка</h2>
+                <span class="help-arrow" id="helpArrow">▼</span>
+            </div>
+            <div class="help-content" id="helpContent" style="display: none;">
+                <div class="help-section">
+                    <h3>📋 Функционал</h3>
+                    <ul id="featuresList"></ul>
+                </div>
+                <div class="help-section">
+                    <h3>📜 История версий</h3>
+                    <div id="versionsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="sidebar.js"></script>
+</body>
+</html>

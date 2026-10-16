@@ -1,0 +1,132 @@
+/* Базовые стили для подсветки */
+.priority-client {
+    position: relative !important;
+    transition: all 0.3s ease !important;
+    border-radius: 8px !important;
+}
+
+/* Цветовые индикаторы */
+.priority-red {
+    background-color: rgba(244, 67, 54, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+.priority-orange {
+    background-color: rgba(255, 152, 0, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+.priority-yellow {
+    background-color: rgba(255, 235, 59, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+.priority-green {
+    background-color: rgba(76, 175, 80, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+.priority-teal {
+    background-color: rgba(0, 150, 136, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+.priority-blue {
+    background-color: rgba(33, 150, 243, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+.priority-purple {
+    background-color: rgba(156, 39, 176, 0.15) !important;
+    border-radius: 8px !important;
+}
+
+/* Бейдж статуса для ссылок */
+.priority-badge {
+    display: inline-block !important;
+    padding: 2px 6px !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    margin-left: 8px !important;
+    vertical-align: middle !important;
+    color: white !important;
+}
+
+.priority-badge-red { background-color: #f44336 !important; }
+.priority-badge-orange { background-color: #ff9800 !important; }
+.priority-badge-yellow { background-color: #ffeb3b !important; color: #333 !important; }
+.priority-badge-green { background-color: #4caf50 !important; }
+.priority-badge-teal { background-color: #009688 !important; }
+.priority-badge-blue { background-color: #2196f3 !important; }
+.priority-badge-purple { background-color: #9c27b0 !important; }
+
+/* Фиксированный бейдж для textarea/input */
+.priority-badge-fixed {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    pointer-events: none !important;
+}
+
+.priority-badge-fixed.priority-badge-red { background-color: #f44336 !important; }
+.priority-badge-fixed.priority-badge-orange { background-color: #ff9800 !important; }
+.priority-badge-fixed.priority-badge-yellow { background-color: #ffeb3b !important; color: #333 !important; }
+.priority-badge-fixed.priority-badge-green { background-color: #4caf50 !important; }
+.priority-badge-fixed.priority-badge-teal { background-color: #009688 !important; }
+.priority-badge-fixed.priority-badge-blue { background-color: #2196f3 !important; }
+.priority-badge-fixed.priority-badge-purple { background-color: #9c27b0 !important; }
+
+/* Панель быстрых действий */
+.quick-panel {
+    position: absolute !important;
+    z-index: 9999 !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    padding: 8px !important;
+    display: flex !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    max-width: 450px !important;
+}
+
+.quick-panel button {
+    border: none !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    color: white !important;
+    transition: transform 0.2s !important;
+}
+
+.quick-panel button:hover {
+    transform: scale(1.1) !important;
+}
+
+/* Wild статус — для компаний, которых нет в БД */
+.priority-wild {
+    background-color: rgba(129, 212, 250, 0.2) !important;
+    border-radius: 8px !important;
+}
+
+.priority-badge-wild {
+    background-color: #81d4fa !important;
+    color: #333 !important;
+}
+
+/* Wild статус — для компаний, которых нет в БД */
+.priority-wild {
+    background-color: rgba(129, 212, 250, 0.2) !important;
+    border-radius: 8px !important;
+}
+
+.priority-badge-wild {
+    background-color: #81d4fa !important;
+    color: #333 !important;
+}
