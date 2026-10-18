@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "AMO CRM Priority Manager",
+  "version": "2.0.0",
+  "description": "Умная подсветка клиентов по приоритетам в amoCRM",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "sidePanel",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.amocrm.ru/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "AMO CRM Priority Manager"
+  },
+  "side_panel": {
+    "default_path": "sidebar/sidebar.html"
+  },
+  "options_page": "options/options.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.amocrm.ru/*"],
+      "js": ["content/index.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "changelog.json",
+        "help/help.html",
+        "help/help.css",
+        "help/index.js",
+        "sidebar/sidebar.html",
+        "sidebar/sidebar.css",
+        "sidebar/index.js",
+        "sidebar/render.js",
+        "sidebar/filters.js",
+        "shared/styles/common.css"
+      ],
+      "matches": ["*://*.amocrm.ru/*"]
+    }
+  ]
+}

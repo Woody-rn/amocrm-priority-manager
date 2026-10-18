@@ -1,0 +1,26 @@
+{
+  "name": "amocrm-priority-manager",
+  "version": "1.9.0",
+  "description": "Расширение для Яндекс Браузера для работы с клиентами в amoCRM",
+  "private": true,
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:ts": "tsc && esbuild src/content/index.ts --bundle --format=iife --outfile=dist/content/index.js && esbuild src/sidebar/index.ts --bundle --format=esm --outfile=dist/sidebar/index.js && esbuild src/popup/index.ts --bundle --format=esm --outfile=dist/popup/index.js && esbuild src/help/index.ts --bundle --format=esm --outfile=dist/help/index.js",
+    "build:copy": "cpx \"src/**/*.{html,css,json,png,svg}\" dist --watch=false",
+    "build": "npm run clean && npm run build:ts && npm run build:copy",
+    "watch:ts": "tsc --watch",
+    "watch:copy": "cpx \"src/**/*.{html,css,json,png,svg}\" dist --watch",
+    "watch": "concurrently \"npm:watch:ts\" \"npm:watch:copy\""
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "concurrently": "^8.2.2",
+    "cpx2": "^7.0.0",
+    "esbuild": "^0.28.2",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  }
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AMO CRM Priority Manager</title>
+    <link rel="stylesheet" href="../shared/styles/theme.css">
+    <link rel="stylesheet" href="../shared/styles/common.css">
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div class="popup-container">
+    <header class="popup-header">
+        <h1>AMO CRM Priority Manager</h1>
+        <span class="popup-version" id="popupVersion">v...</span>
+    </header>
+
+    <section class="popup-section">
+        <h2 class="popup-section__title">⚡ Действия</h2>
+        <div class="popup-actions">
+            <button id="openSidebarBtn" class="popup-btn popup-btn--primary">
+                📊 Открыть панель
+            </button>
+            <button id="exportBtn" class="popup-btn">
+                📤 Экспорт JSON
+            </button>
+            <button id="importBtn" class="popup-btn">
+                📥 Импорт JSON
+            </button>
+            <button id="clearAllBtn" class="popup-btn popup-btn--danger">
+                🗑 Очистить всё
+            </button>
+            <input type="file" id="importFile" accept=".json" hidden>
+        </div>
+    </section>
+
+    <section class="popup-section">
+        <h2 class="popup-section__title">📊 Статистика</h2>
+        <div id="popupStats" class="popup-stats"></div>
+    </section>
+
+    <footer class="popup-footer">
+        <button id="helpBtn" class="popup-footer__help">ℹ️ Справка</button>
+    </footer>
+</div>
+
+<script type="module" src="index.js"></script>
+</body>
+</html>

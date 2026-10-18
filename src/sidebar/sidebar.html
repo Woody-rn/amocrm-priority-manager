@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AMO CRM Priority Manager</title>
+    <link rel="stylesheet" href="../shared/styles/theme.css">
+    <link rel="stylesheet" href="../shared/styles/common.css">
+    <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+<div class="sidebar-container">
+    <!-- Статистика -->
+    <section class="sidebar-section">
+        <h2 class="sidebar-section__title">📊 Статистика</h2>
+        <div id="statsList" class="stats-list"></div>
+    </section>
+
+    <!-- Фильтры и поиск -->
+    <section class="sidebar-section">
+        <h2 class="sidebar-section__title">🔍 Фильтры</h2>
+        <div id="filtersContainer" class="filters-container"></div>
+    </section>
+
+    <!-- Клиенты -->
+    <section class="sidebar-section sidebar-section--grow">
+        <h2 class="sidebar-section__title">👥 Клиенты</h2>
+        <div id="clientsList" class="clients-list"></div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="sidebar-footer">
+        <button id="helpBtn" class="sidebar-footer__help" type="button">
+            ℹ️ Справка
+        </button>
+        <span class="sidebar-footer__version">v2.0.0</span>
+    </footer>
+</div>
+
+<script type="module" src="index.js"></script>
+</body>
+</html>

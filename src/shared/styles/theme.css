@@ -1,0 +1,33 @@
+/* ====БАЗОВЫЕ ПЕРЕМЕННЫЕ (СВЕТЛАЯ ТЕМА)====================== */
+:root {
+    --bg-body: #f5f5f5;
+    --bg-card: #ffffff;
+    --bg-hover: #f0f0f0;
+
+    --text-main: #333333;
+    --text-muted: #666666;
+    --text-light: #999999;
+
+    --border-color: #e0e0e0;
+
+    --primary-color: #2196f3;
+    --danger-color: #f44336;
+    --success-color: #4caf50;
+}
+
+/* ====ТЕМНАЯ ТЕМА============================================ */
+body.theme-dark {
+    --bg-body: #1e1e1e;
+    --bg-card: #2d2d2d;
+    --bg-hover: #3d3d3d;
+
+    --text-main: #e0e0e0;
+    --text-muted: #aaaaaa;
+    --text-light: #777777;
+
+    --border-color: #444444;
+
+    --primary-color: #64b5f6;
+    --danger-color: #e57373;
+    --success-color: #81c784;
+}
