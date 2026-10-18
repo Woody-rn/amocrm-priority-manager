@@ -148,8 +148,16 @@ class SidebarApp {
 
     private setupStorageListener(): void {
         chrome.storage.onChanged.addListener((changes, namespace) => {
-            if (namespace === 'local' && changes[STORAGE_KEYS.clients]) {
+            if (namespace !== 'local') return;
+
+            // 1. Обновление списка клиентов
+            if (changes[STORAGE_KEYS.clients]) {
                 void this.refresh();
+            }
+
+            // 2. Обновление темы (на лету)
+            if (changes[STORAGE_KEYS.settings]) {
+                void applyTheme();
             }
         });
     }

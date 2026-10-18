@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "clean": "rimraf dist",
-    "build:ts": "tsc && esbuild src/content/index.ts --bundle --format=iife --outfile=dist/content/index.js && esbuild src/sidebar/index.ts --bundle --format=esm --outfile=dist/sidebar/index.js && esbuild src/popup/index.ts --bundle --format=esm --outfile=dist/popup/index.js && esbuild src/help/index.ts --bundle --format=esm --outfile=dist/help/index.js",
+    "build:ts": "tsc && esbuild src/content/index.ts --bundle --format=iife --outfile=dist/content/index.js && esbuild src/sidebar/index.ts --bundle --format=esm --outfile=dist/sidebar/index.js && esbuild src/popup/index.ts --bundle --format=esm --outfile=dist/popup/index.js && esbuild src/help/index.ts --bundle --format=esm --outfile=dist/help/index.js && esbuild src/options/index.ts --bundle --format=esm --outfile=dist/options/index.js",
     "build:copy": "cpx \"src/**/*.{html,css,json,png,svg}\" dist --watch=false",
     "build": "npm run clean && npm run build:ts && npm run build:copy",
     "watch:ts": "tsc --watch",
