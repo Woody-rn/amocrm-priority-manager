@@ -86,16 +86,6 @@ body {
     filter: brightness(0.9);
 }
 
-.popup-btn--danger {
-    color: var(--danger-color, #f44336);
-    border-color: var(--danger-color, #f44336);
-    background: var(--bg-card, #fff);
-}
-
-.popup-btn--danger:hover {
-    background: rgba(244, 67, 54, 0.1);
-}
-
 /* ====STATS================================================== */
 .popup-stats {
     display: flex;
