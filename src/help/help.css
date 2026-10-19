@@ -188,3 +188,36 @@ body {
     color: #999;
     font-size: 13px;
 }
+
+.help-tech-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 16px 0;
+}
+
+.help-tech-list li {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-hover, #f9f9f9);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color, #2196f3);
+}
+
+.help-tech-list code {
+    display: inline-block;
+    background: var(--bg-card, #fff);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--danger-color, #d32f2f);
+    margin: 8px 0;
+    border: 1px solid var(--border-color, #eee);
+}
+
+.help-tech-desc {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-muted, #666);
+    line-height: 1.5;
+}

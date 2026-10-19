@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "AMO CRM Priority Manager",
+  "name": "__MSG_extName__",
   "version": "2.0.0",
   "description": "Умная подсветка клиентов по приоритетам в amoCRM",
+  "default_locale": "ru",
   "permissions": [
     "storage",
     "activeTab",

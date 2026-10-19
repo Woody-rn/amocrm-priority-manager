@@ -1,0 +1,72 @@
+{
+  "extName": {
+    "message": "AMO CRM Priority Manager",
+    "description": "Extension name"
+  },
+  "helpTitle": {
+    "message": "Help"
+  },
+  "helpInstructions": {
+    "message": "How to use"
+  },
+  "helpLogic": {
+    "message": "Sync logic"
+  },
+  "helpTech": {
+    "message": "Technical information"
+  },
+  "statusesTitle": {
+    "message": "Client statuses"
+  },
+  "step1": {
+    "message": "Open amoCRM on the 'Tasks' page (/todo) — the extension will automatically collect deals."
+  },
+  "step2": {
+    "message": "Hover over a deal name — a status panel will appear."
+  },
+  "step3": {
+    "message": "Select a status — the deal will be saved in the local database."
+  },
+  "step4": {
+    "message": "Open the sidebar (the 'Panel' button on the right) — there you will find statistics, search, and filters."
+  },
+  "step5": {
+    "message": "Use the popup (extension icon) for export/import and settings."
+  },
+  "logicTodoNew": {
+    "message": "New deal: added to DB with status 'New'."
+  },
+  "logicTodoExisting": {
+    "message": "Deal already in DB: metadata is updated, but status is not reset."
+  },
+  "logicDetailInDb": {
+    "message": "Deal in DB: shows your status. Changing status updates the DB."
+  },
+  "logicDetailWild": {
+    "message": "Deal not in DB (Wild 🍒): selecting a status automatically adds it to DB."
+  },
+  "helpTechTitle": {
+    "message": "Technical information"
+  },
+  "helpTechIntro": {
+    "message": "If amoCRM changes its markup and the extension stops finding elements, check these selectors in the code (src/shared/constants.ts):"
+  },
+  "helpTechTodo": {
+    "message": "Page /todo:"
+  },
+  "helpTechLeadsList": {
+    "message": "Page /leads/list:"
+  },
+  "helpTechDetail": {
+    "message": "Page /leads/detail:"
+  },
+  "helpTechTodoDesc": {
+    "message": "Searches only for deal links within the task list. The wrapper doesn't matter, as long as the link has the js-navigate-link class and its href contains /leads/detail/."
+  },
+  "helpTechDetailDesc": {
+    "message": "Searches for the deal name field by ID. On the deal page, this is a unique textarea."
+  },
+  "helpTechLeadId": {
+    "message": "The deal ID is extracted from the href attribute (the number after /leads/detail/) or from the span.tag on the deal page."
+  }
+}

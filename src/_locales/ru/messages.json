@@ -1,0 +1,72 @@
+{
+  "extName": {
+    "message": "AMO CRM Priority Manager",
+    "description": "Название расширения"
+  },
+  "helpTitle": {
+    "message": "Справка"
+  },
+  "helpInstructions": {
+    "message": "Как пользоваться"
+  },
+  "helpLogic": {
+    "message": "Логика синхронизации"
+  },
+  "helpTech": {
+    "message": "Техническая информация"
+  },
+  "statusesTitle": {
+    "message": "Статусы клиентов"
+  },
+  "step1": {
+    "message": "Откройте amoCRM на странице «Задачи» (/todo) — расширение автоматически соберёт сделки."
+  },
+  "step2": {
+    "message": "Наведите на название сделки — появится панель со статусами."
+  },
+  "step3": {
+    "message": "Выберите статус — сделка сохранится в локальной базе."
+  },
+  "step4": {
+    "message": "Откройте боковую панель (кнопка «Панель» справа) — там статистика, поиск и фильтры."
+  },
+  "step5": {
+    "message": "Для экспорта/импорта и настроек используйте popup (иконка расширения)."
+  },
+  "logicTodoNew": {
+    "message": "Новая сделка: добавляется в БД со статусом «🆕 Новый»."
+  },
+  "logicTodoExisting": {
+    "message": "Сделка уже в БД: метаданные обновляются, но статус не сбрасывается."
+  },
+  "logicDetailInDb": {
+    "message": "Сделка в БД: показывает ваш статус. Смена статуса обновляет БД."
+  },
+  "logicDetailWild": {
+    "message": "Сделки нет в БД (Wild 🍒): при выборе статуса она автоматически добавляется в БД."
+  },
+  "helpTechTitle": {
+    "message": "Техническая информация"
+  },
+  "helpTechIntro": {
+    "message": "Если в amoCRM обновится верстка и расширение перестанет находить элементы, проверьте эти селекторы в коде (src/shared/constants.ts):"
+  },
+  "helpTechTodo": {
+    "message": "Страница /todo:"
+  },
+  "helpTechLeadsList": {
+    "message": "Страница /leads/list:"
+  },
+  "helpTechDetail": {
+    "message": "Страница /leads/detail:"
+  },
+  "helpTechTodoDesc": {
+    "message": "Ищет только ссылки на сделки внутри списка задач. Обертка не важна, главное чтобы у ссылки был класс js-navigate-link и href содержал /leads/detail/."
+  },
+  "helpTechDetailDesc": {
+    "message": "Ищет поле с названием сделки по ID. На странице сделки это уникальный textarea."
+  },
+  "helpTechLeadId": {
+    "message": "ID сделки извлекается из атрибута href (число после /leads/detail/) или из тега span.tag на странице сделки."
+  }
+}
