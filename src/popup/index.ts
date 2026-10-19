@@ -27,13 +27,11 @@ class PopupApp {
         const clients = await this.storage.getAllClients();
         container.innerHTML = '';
 
-        // Всего
         const total = document.createElement('div');
         total.className = 'popup-stat-total';
         total.innerHTML = `<span>Всего клиентов</span><strong>${clients.length}</strong>`;
         container.appendChild(total);
 
-        // По статусам (только те, где есть клиенты)
         STATUS_ORDER.forEach((status) => {
             const count = clients.filter((c) => c.status === status).length;
             if (count === 0) return;
@@ -51,21 +49,24 @@ class PopupApp {
     }
 
     private addEventListeners(): void {
-        // Открыть панель
         document.getElementById('openSidebarBtn')?.addEventListener('click', () => {
             void chrome.runtime.sendMessage({ action: 'openSidebar' });
             window.close();
         });
 
-        // Настройки
         document.getElementById('openSettingsBtn')?.addEventListener('click', () => {
             void chrome.runtime.openOptionsPage();
             window.close();
         });
 
-        // Справка
+        document.getElementById('openAnalyticsBtn')?.addEventListener('click', () => {
+            void chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#analytics') });
+            window.close();
+        });
+
+        // Справка (открывает настройки на вкладке "Функционал")
         document.getElementById('helpBtn')?.addEventListener('click', () => {
-            void chrome.runtime.sendMessage({ action: 'openHelp' });
+            chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#features') });
             window.close();
         });
     }

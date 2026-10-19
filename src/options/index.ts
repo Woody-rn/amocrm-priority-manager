@@ -3,7 +3,9 @@ import { StorageService } from '../shared/storage';
 import { SettingsService, type Theme } from '../shared/settings';
 import { STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
 import { applyTheme } from '../shared/utils/theme';
-import type { Client } from '../shared/types';
+import type { Client, ChangelogData } from '../shared/types';
+import { renderFeatures } from './components/render-features';
+import { renderHistory } from './components/render-history';
 
 // ====OPTIONS APP============================================
 
@@ -17,14 +19,24 @@ class OptionsApp {
         this.renderVersion();
         await this.loadSettings();
         this.setupTabs();
+        this.checkHash();
         this.addEventListeners();
         await this.renderChart();
+        await this.renderFeaturesAndHistory();
     }
 
     private renderVersion(): void {
         const version = chrome.runtime.getManifest().version;
         const el = document.getElementById('appVersion');
         if (el) el.textContent = `v${version}`;
+    }
+
+    private checkHash(): void {
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            const tab = document.querySelector(`[data-tab="${hash}"]`);
+            if (tab) (tab as HTMLElement).click();
+        }
     }
 
     private async loadSettings(): Promise<void> {
@@ -113,6 +125,28 @@ class OptionsApp {
         });
     }
 
+    private async renderFeaturesAndHistory(): Promise<void> {
+        // 1. Функционал
+        const featuresContainer = document.getElementById('featuresContainer');
+        if (featuresContainer) {
+            renderFeatures(featuresContainer);
+        }
+
+        // 2. История версий
+        const historyContainer = document.getElementById('historyContainer');
+        if (historyContainer) {
+            try {
+                const url = chrome.runtime.getURL('changelog.json');
+                const response = await fetch(url);
+                const changelog = await response.json() as ChangelogData;
+                renderHistory(historyContainer, changelog);
+            } catch (e) {
+                console.error('Ошибка загрузки changelog:', e);
+                historyContainer.innerHTML = '<p>Не удалось загрузить историю версий.</p>';
+            }
+        }
+    }
+
     private async saveSettings(): Promise<void> {
         const baseUrlInput = document.getElementById('baseUrlInput') as HTMLInputElement;
         const autoCollectInput = document.getElementById('autoCollectInput') as HTMLInputElement;
@@ -124,7 +158,7 @@ class OptionsApp {
             theme: themeSelect.value as Theme
         });
 
-        await applyTheme(); // Применяем тему сразу
+        await applyTheme();
         alert('Настройки сохранены!');
     }
 
@@ -155,7 +189,6 @@ class OptionsApp {
             const text = await file.text();
             const imported = JSON.parse(text) as Client[];
 
-            // Проверяем формат без выброса исключения
             if (!Array.isArray(imported)) {
                 alert('Неверный формат файла');
                 return;
@@ -189,15 +222,10 @@ class OptionsApp {
     private addEventListeners(): void {
         document.getElementById('saveSettingsBtn')?.addEventListener('click', () => void this.saveSettings());
 
-        document.getElementById('helpBtn')?.addEventListener('click', () => {
-            void chrome.runtime.sendMessage({ action: 'openHelp' });
-        });
-
         document.querySelector('[data-tab="analytics"]')?.addEventListener('click', () => {
             void this.renderChart();
         });
 
-        // Экспорт / Импорт / Очистка
         document.getElementById('exportBtn')?.addEventListener('click', () => void this.handleExport());
         document.getElementById('importBtn')?.addEventListener('click', () => {
             document.getElementById('importFile')?.click();

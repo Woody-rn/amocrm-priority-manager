@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Умная подсветка клиентов по приоритетам в amoCRM",
   "default_locale": "ru",
   "permissions": [
@@ -36,9 +36,6 @@
     {
       "resources": [
         "changelog.json",
-        "help/help.html",
-        "help/help.css",
-        "help/index.js",
         "sidebar/sidebar.html",
         "sidebar/sidebar.css",
         "sidebar/index.js",

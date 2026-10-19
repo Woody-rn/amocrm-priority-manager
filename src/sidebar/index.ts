@@ -60,7 +60,6 @@ class SidebarApp {
         this.filterState = await loadFilterState();
         await this.refresh();
         this.setupFilters();
-        this.addEventListeners();
         this.setupStorageListener();
     }
 
@@ -136,15 +135,6 @@ class SidebarApp {
     }
 
     // ====EVENTS===============================================
-
-    private addEventListeners(): void {
-        const helpBtn = document.getElementById('helpBtn');
-        if (helpBtn) {
-            helpBtn.addEventListener('click', () => {
-                void chrome.runtime.sendMessage({ action: 'openHelp' });
-            });
-        }
-    }
 
     private setupStorageListener(): void {
         chrome.storage.onChanged.addListener((changes, namespace) => {

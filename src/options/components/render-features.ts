@@ -1,5 +1,5 @@
-import { STATUS_CONFIG, STATUS_ORDER, GROUP_LABELS, GROUP_ORDER } from '../shared/statuses';
-import { SELECTORS } from '../shared/constants';
+import { STATUS_CONFIG, STATUS_ORDER, GROUP_LABELS, GROUP_ORDER } from '../../shared/statuses';
+import { SELECTORS } from '../../shared/constants';
 
 // Хелпер для получения перевода
 const t = (key: string) => chrome.i18n.getMessage(key);

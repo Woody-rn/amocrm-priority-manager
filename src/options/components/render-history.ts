@@ -1,4 +1,4 @@
-import type { ChangelogData } from '../shared/types';
+import type { ChangelogData } from '../../shared/types';
 
 // ====RENDER HISTORY=========================================
 
