@@ -200,6 +200,15 @@ body {
 .options-actions {
     display: flex;
     gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+/* Стили для разделителя (hr) */
+.options-card hr {
+    margin: 32px 0;
+    border: none;
+    border-top: 1px solid var(--border-color, #eee);
 }
 
 /* ====FOOTER================================================= */

@@ -126,13 +126,11 @@ class OptionsApp {
     }
 
     private async renderFeaturesAndHistory(): Promise<void> {
-        // 1. Функционал
         const featuresContainer = document.getElementById('featuresContainer');
         if (featuresContainer) {
             renderFeatures(featuresContainer);
         }
 
-        // 2. История версий
         const historyContainer = document.getElementById('historyContainer');
         if (historyContainer) {
             try {
@@ -159,7 +157,6 @@ class OptionsApp {
         });
 
         await applyTheme();
-        alert('Настройки сохранены!');
     }
 
     // ====ACTIONS (Экспорт/Импорт/Очистка)====================

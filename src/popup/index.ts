@@ -49,24 +49,32 @@ class PopupApp {
     }
 
     private addEventListeners(): void {
+        // Открыть панель
         document.getElementById('openSidebarBtn')?.addEventListener('click', () => {
-            void chrome.runtime.sendMessage({ action: 'openSidebar' });
-            window.close();
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (tabs[0]?.id) {
+                    chrome.sidePanel.open({ tabId: tabs[0].id })
+                        .then(() => window.close())
+                        .catch((err) => console.error('[Popup] Ошибка открытия панели:', err));
+                }
+            });
         });
 
+        // Настройки (открываем с хэшем #settings)
         document.getElementById('openSettingsBtn')?.addEventListener('click', () => {
-            void chrome.runtime.openOptionsPage();
+            void chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#settings') });
             window.close();
         });
 
+        // Аналитика (открываем с хэшем #analytics)
         document.getElementById('openAnalyticsBtn')?.addEventListener('click', () => {
             void chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#analytics') });
             window.close();
         });
 
-        // Справка (открывает настройки на вкладке "Функционал")
+        // Справка (открываем с хэшем #features)
         document.getElementById('helpBtn')?.addEventListener('click', () => {
-            chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#features') });
+            void chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#features') });
             window.close();
         });
     }
