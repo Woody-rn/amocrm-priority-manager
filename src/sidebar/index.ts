@@ -60,6 +60,7 @@ class SidebarApp {
         this.filterState = await loadFilterState();
         await this.refresh();
         this.setupFilters();
+        this.setupToggles();
         this.setupStorageListener();
     }
 
@@ -120,6 +121,26 @@ class SidebarApp {
         this.filtersController.render(this.allClients);
     }
 
+    private setupToggles(): void {
+        const headers = document.querySelectorAll('.sidebar-section__header');
+
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                const targetId = (header as HTMLElement).dataset.target;
+                if (!targetId) return;
+
+                const content = document.getElementById(targetId);
+                const button = header.querySelector('.sidebar-section__toggle');
+
+                if (content && button) {
+                    const isHidden = content.style.display === 'none';
+                    content.style.display = isHidden ? 'block' : 'none';
+                    button.textContent = isHidden ? '▼' : '▶';
+                }
+            });
+        });
+    }
+
     // ====HANDLERS=============================================
 
     private async handleStatusChange(id: string, status: ClientStatus): Promise<void> {
@@ -159,3 +180,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = new SidebarApp();
     void app.init();
 });
+
