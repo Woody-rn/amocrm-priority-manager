@@ -6,13 +6,11 @@ export type Theme = 'light' | 'dark' | 'system';
 
 export interface AppSettings {
     baseUrl: string;
-    autoCollect: boolean;
     theme: Theme;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
     baseUrl: '',
-    autoCollect: true,
     theme: 'system'
 };
 

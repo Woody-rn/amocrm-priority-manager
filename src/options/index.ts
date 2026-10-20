@@ -43,8 +43,7 @@ class OptionsApp {
         const settings = await this.settingsService.getSettings();
         const baseUrlInput = document.getElementById('baseUrlInput') as HTMLInputElement;
         if (baseUrlInput) baseUrlInput.value = settings.baseUrl || window.location.origin;
-        const autoCollectInput = document.getElementById('autoCollectInput') as HTMLInputElement;
-        if (autoCollectInput) autoCollectInput.checked = settings.autoCollect;
+
         const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
         if (themeSelect) themeSelect.value = settings.theme;
     }
@@ -147,12 +146,10 @@ class OptionsApp {
 
     private async saveSettings(): Promise<void> {
         const baseUrlInput = document.getElementById('baseUrlInput') as HTMLInputElement;
-        const autoCollectInput = document.getElementById('autoCollectInput') as HTMLInputElement;
         const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
 
         await this.settingsService.saveSettings({
             baseUrl: baseUrlInput.value.trim(),
-            autoCollect: autoCollectInput.checked,
             theme: themeSelect.value as Theme
         });
 

@@ -7,17 +7,11 @@ import { extractNameFromElement, extractLeadIdFromElement } from '../shared/util
 import { StatusResolver } from './status-resolver';
 import { Highlighter } from './highlighter';
 import { QuickPanel } from './quick-panel';
-import { Collector } from './collectors';
 import { SidebarHandle } from './sidebar-handle';
 import { UrlWatcher } from './url-watcher';
-import { SettingsService } from '../shared/settings';
+import { ExtractorFactory } from './extractors/ExtractorFactory';
+import type { IClientExtractor } from './extractors/IClientExtractor';
 
-// ====CONTENT APP=============================================
-
-/**
- * Точка входа content script.
- * Координирует все модули.
- */
 class ContentApp {
     private storage = new StorageService();
     private highlighter = new Highlighter();
@@ -25,14 +19,13 @@ class ContentApp {
     private quickPanel = new QuickPanel((clientName, status) =>
         this.handleStatusSelect(clientName, status)
     );
-    private settings = new SettingsService();
-    private collector: Collector | null = null;
+
+    private extractor: IClientExtractor | null = null;
     private resolver: StatusResolver | null = null;
     private pageType: PageType | null = null;
     private domObserver: MutationObserver | null = null;
 
     async init(): Promise<void> {
-        await this.settings.ensureBaseUrl(window.location.origin);
         await this.createHandle();
         await this.refresh();
         this.urlWatcher.start();
@@ -40,20 +33,24 @@ class ContentApp {
         this.addEventListeners();
     }
 
-    // ====RENDER===============================================
-
     private async refresh(): Promise<void> {
-        const pageType = this.detectPage();
-        if (!pageType) return;
+        let pageType = this.detectPage();
+
+        // Костыль для SPA: если URL не поменялся, но textarea появилась (модалка)
+        if (document.querySelector('textarea#person_n') && pageType !== 'leadsDetail') {
+            pageType = 'leadsDetail';
+        }
+
+        if (!pageType) {
+            console.log('[ContentApp] Страница не поддерживается');
+            return;
+        }
 
         this.pageType = pageType;
-        this.collector = new Collector(pageType);
+        this.extractor = ExtractorFactory.create(pageType);
 
         if (pageType === 'todo') {
-            const settings = await this.settings.getSettings();
-            if (settings.autoCollect) {
-                await this.collectNewClients();
-            }
+            await this.collectNewClients();
         }
 
         const clients = await this.storage.getAllClients();
@@ -64,10 +61,10 @@ class ContentApp {
     }
 
     private render(): void {
-        if (!this.collector || !this.resolver) return;
+        if (!this.extractor || !this.resolver) return;
 
         this.highlighter.clearAll();
-        const elements = this.collector.findElements();
+        const elements = this.extractor.findElements();
 
         for (const element of elements) {
             const clientName = extractNameFromElement(element);
@@ -79,18 +76,32 @@ class ContentApp {
         }
     }
 
-    // ====DOM OBSERVER=========================================
+    private async collectNewClients(): Promise<void> {
+        if (!this.extractor) return;
+
+        const elements = this.extractor.findElements();
+        const newClients = [];
+
+        for (const element of elements) {
+            const client = this.extractor.extractClient(element);
+            if (client) newClients.push(client);
+        }
+
+        if (newClients.length > 0) {
+            await this.storage.saveNewClients(newClients);
+        }
+    }
 
     private startDomObserver(): void {
         if (this.domObserver) this.domObserver.disconnect();
 
         this.domObserver = new MutationObserver(() => {
-            if (!this.collector) return;
-
-            const elements = this.collector.findElements();
+            if (!this.extractor) return;
+            const elements = this.extractor.findElements();
             if (elements.length > 0) {
                 const firstEl = elements[0];
                 if (!firstEl.dataset.clientName) {
+                    // Если появились новые элементы, которые еще не подсвечены
                     this.render();
                 }
             }
@@ -101,26 +112,6 @@ class ContentApp {
             subtree: true
         });
     }
-
-    // ====COLLECT==============================================
-
-    private async collectNewClients(): Promise<void> {
-        if (!this.collector) return;
-
-        const elements = this.collector.findElements();
-        const newClients = [];
-
-        for (const element of elements) {
-            const client = this.collector.extractClient(element);
-            if (client) newClients.push(client);
-        }
-
-        if (newClients.length > 0) {
-            await this.storage.saveNewClients(newClients);
-        }
-    }
-
-    // ====EVENTS===============================================
 
     private addEventListeners(): void {
         document.addEventListener('mouseover', (e) => {
@@ -141,9 +132,7 @@ class ContentApp {
             const element = (e.target as HTMLElement).closest(
                 'a.js-navigate-link, textarea#person_n'
             );
-            if (element) {
-                this.quickPanel.hideWithDelay();
-            }
+            if (element) this.quickPanel.hideWithDelay();
         });
 
         document.addEventListener('click', (e) => {
@@ -153,15 +142,10 @@ class ContentApp {
         });
     }
 
-    private async handleStatusSelect(
-        clientName: string,
-        status: ClientStatus
-    ): Promise<void> {
+    private async handleStatusSelect(clientName: string, status: ClientStatus): Promise<void> {
         const element = Array.from(
             document.querySelectorAll('a.js-navigate-link, textarea#person_n')
-        ).find(
-            (el) => (el as HTMLElement).dataset.clientName === clientName
-        ) as HTMLElement | null;
+        ).find(el => (el as HTMLElement).dataset.clientName === clientName) as HTMLElement | null;
 
         if (!element) return;
 
@@ -171,10 +155,20 @@ class ContentApp {
             return;
         }
 
-        const client = await this.storage.getClientByLeadId(leadId);
+        let client = await this.storage.getClientByLeadId(leadId);
+
         if (client) {
             client.status = status;
             await this.storage.saveClient(client);
+        } else {
+            // Если клиента нет, создаем его через экстрактор
+            if (this.extractor) {
+                const newClient = this.extractor.extractClient(element);
+                if (newClient) {
+                    newClient.status = status;
+                    await this.storage.saveClient(newClient);
+                }
+            }
         }
 
         await this.refresh();
@@ -183,12 +177,9 @@ class ContentApp {
     private async handleUrlChange(url: string): Promise<void> {
         const newPageType = this.detectPageByUrl(url);
         if (newPageType === this.pageType) return;
-
         this.highlighter.clearAll();
         await this.refresh();
     }
-
-    // ====HELPERS==============================================
 
     private detectPage(): PageType | null {
         return this.detectPageByUrl(location.href);

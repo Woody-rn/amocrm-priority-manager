@@ -1,7 +1,6 @@
 import { STATUS_CONFIG, STATUS_ORDER, GROUP_LABELS, GROUP_ORDER } from '../../shared/statuses';
 import { SELECTORS } from '../../shared/constants';
 
-// Хелпер для получения перевода
 const t = (key: string) => chrome.i18n.getMessage(key);
 
 export function renderFeatures(container: HTMLElement): void {
@@ -73,7 +72,6 @@ export function renderFeatures(container: HTMLElement): void {
     container.appendChild(logicSection);
 
     // 4. ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ
-    // 4. ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ
     const techSection = document.createElement('section');
     techSection.className = 'help-section';
 
@@ -87,7 +85,7 @@ export function renderFeatures(container: HTMLElement): void {
             description = t('helpTechTodoDesc');
         } else if (page === 'leadsList') {
             pageName = t('helpTechLeadsList');
-            description = t('helpTechTodoDesc'); // Описание такое же
+            description = t('helpTechTodoDesc');
         } else if (page === 'leadsDetail') {
             pageName = t('helpTechDetail');
             description = t('helpTechDetailDesc');

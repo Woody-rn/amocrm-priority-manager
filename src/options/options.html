@@ -31,7 +31,7 @@
             </div>
         </section>
 
-        <!-- Настройки -->
+        <!-- Настройки (Данные тоже здесь) -->
         <section class="options-panel" id="tab-settings" style="display: none;">
             <div class="options-card">
                 <h2>Основные настройки</h2>
@@ -40,14 +40,6 @@
                     <label for="baseUrlInput">Базовый домен amoCRM</label>
                     <input type="text" id="baseUrlInput" placeholder="https://mycompany.amocrm.ru">
                     <small>Используется для формирования ссылок на сделки.</small>
-                </div>
-
-                <div class="options-field">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="autoCollectInput">
-                        <span>Автоматический сбор данных на /todo</span>
-                    </label>
-                    <small>Если выключено, расширение не будет автоматически собирать и обновлять сделки.</small>
                 </div>
 
                 <div class="options-field">
@@ -60,20 +52,20 @@
                 </div>
 
                 <button id="saveSettingsBtn" class="btn btn-primary">Сохранить настройки</button>
-            </div>
 
-            <hr style="margin: 32px 0; border: none; border-top: 1px solid var(--border-color, #eee);">
+                <hr style="margin: 32px 0; border: none; border-top: 1px solid var(--border-color, #eee);">
 
-            <h2>Резервное копирование</h2>
-            <div class="options-actions" style="margin-bottom: 24px;">
-                <button id="exportBtn" class="btn">📤 Экспорт JSON</button>
-                <button id="importBtn" class="btn">📥 Импорт JSON</button>
-                <input type="file" id="importFile" accept=".json" hidden>
-            </div>
+                <h2>Резервное копирование</h2>
+                <div class="options-actions" style="margin-bottom: 24px;">
+                    <button id="exportBtn" class="btn">📤 Экспорт JSON</button>
+                    <button id="importBtn" class="btn">📥 Импорт JSON</button>
+                    <input type="file" id="importFile" accept=".json" hidden>
+                </div>
 
-            <h2 style="color: var(--danger-color);">Опасная зона</h2>
-            <div class="options-actions">
-                <button id="clearAllBtn" class="btn btn-danger">🗑 Очистить все данные</button>
+                <h2 style="color: var(--danger-color);">Опасная зона</h2>
+                <div class="options-actions">
+                    <button id="clearAllBtn" class="btn btn-danger">🗑 Очистить все данные</button>
+                </div>
             </div>
         </section>
 
