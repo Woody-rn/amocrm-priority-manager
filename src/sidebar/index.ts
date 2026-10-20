@@ -72,32 +72,33 @@ class SidebarApp {
     }
 
     private render(): void {
-        // Статистика
         const statsContainer = document.getElementById('statsList');
         if (statsContainer) {
             renderStats(statsContainer, this.allClients);
         }
 
-        // Список клиентов
-        const clientsContainer = document.getElementById('clientsList');
-        if (clientsContainer) {
-            const filtered = applyFilters(this.allClients, this.filterState);
-            renderClients(
-                clientsContainer,
-                filtered,
-                this.filterState.searchQuery,
-                this.baseUrl, // Передаем домен
-                {
-                    onStatusChange: (id, status) => this.handleStatusChange(id, status),
-                    onDelete: (id) => this.handleDelete(id)
-                }
-            );
-        }
+        this.renderClientsList();
 
-        // Фильтры
         if (this.filtersController) {
             this.filtersController.render(this.allClients);
         }
+    }
+
+    private renderClientsList(): void {
+        const clientsContainer = document.getElementById('clientsList');
+        if (!clientsContainer) return;
+
+        const filtered = applyFilters(this.allClients, this.filterState);
+        renderClients(
+            clientsContainer,
+            filtered,
+            this.filterState.searchQuery,
+            this.baseUrl,
+            {
+                onStatusChange: (id, status) => this.handleStatusChange(id, status),
+                onDelete: (id) => this.handleDelete(id)
+            }
+        );
     }
 
     // ====FILTERS==============================================
@@ -110,16 +111,25 @@ class SidebarApp {
             filtersContainer,
             this.filterState,
             {
-                onChange: async (state) => {
+                onChange: async (state, needsRerender) => {
                     this.filterState = state;
                     await saveFilterState(state);
-                    this.render();
+
+                    // Всегда обновляем список
+                    this.renderClientsList();
+
+                    // Перерисовываем фильтры только если нужно
+                    if (needsRerender && this.filtersController) {
+                        this.filtersController.render(this.allClients);
+                    }
                 }
             }
         );
 
         this.filtersController.render(this.allClients);
     }
+
+    // ====TOGGLES==============================================
 
     private setupToggles(): void {
         const headers = document.querySelectorAll('.sidebar-section__header');
@@ -161,12 +171,10 @@ class SidebarApp {
         chrome.storage.onChanged.addListener((changes, namespace) => {
             if (namespace !== 'local') return;
 
-            // 1. Обновление списка клиентов
             if (changes[STORAGE_KEYS.clients]) {
                 void this.refresh();
             }
 
-            // 2. Обновление темы (на лету)
             if (changes[STORAGE_KEYS.settings]) {
                 void applyTheme();
             }
@@ -180,4 +188,3 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = new SidebarApp();
     void app.init();
 });
-

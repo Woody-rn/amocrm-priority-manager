@@ -11,14 +11,12 @@ export interface FilterState {
 }
 
 export interface FilterCallbacks {
-    onChange: (state: FilterState) => void;
+    // Второй параметр указывает, нужно ли перерисовывать сами фильтры
+    onChange: (state: FilterState, needsRerender: boolean) => void;
 }
 
 // ====FILTERS CONTROLLER=====================================
 
-/**
- * Управляет фильтрами и поиском.
- */
 export class FiltersController {
     private readonly state: FilterState;
     private readonly callbacks: FilterCallbacks;
@@ -32,9 +30,6 @@ export class FiltersController {
         this.callbacks = callbacks;
     }
 
-    /**
-     * Рендерит панель фильтров.
-     */
     render(allClients: Client[]): void {
         this.container.innerHTML = '';
 
@@ -56,14 +51,16 @@ export class FiltersController {
         searchInput.addEventListener('input', () => {
             this.state.searchQuery = searchInput.value;
             clearBtn.style.display = searchInput.value ? 'flex' : 'none';
-            this.callbacks.onChange(this.state);
+            // false — не перерисовывать фильтры (сохраняем фокус)
+            this.callbacks.onChange(this.state, false);
         });
 
         clearBtn.addEventListener('click', () => {
             searchInput.value = '';
             this.state.searchQuery = '';
             clearBtn.style.display = 'none';
-            this.callbacks.onChange(this.state);
+            // true — перерисовываем, чтобы скрыть крестик
+            this.callbacks.onChange(this.state, true);
             searchInput.focus();
         });
 
@@ -84,7 +81,6 @@ export class FiltersController {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'filters-group';
 
-            // Заголовок группы
             const header = document.createElement('div');
             header.className = 'filters-group__header';
 
@@ -102,13 +98,13 @@ export class FiltersController {
                 } else {
                     groupStatuses.forEach((s) => this.state.selectedStatuses.delete(s));
                 }
-                this.callbacks.onChange(this.state);
+                // true — перерисовываем фильтры (чтобы обновить дочерние чекбоксы)
+                this.callbacks.onChange(this.state, true);
             });
 
             const label = document.createElement('span');
             label.className = 'filters-group__label';
 
-            // Счётчик в скобках
             const groupCount = allClients.filter((c) =>
                 groupStatuses.includes(c.status)
             ).length;
@@ -127,16 +123,15 @@ export class FiltersController {
                 } else {
                     this.state.expandedGroups.add(group);
                 }
-                this.callbacks.onChange(this.state);
+                // true — перерисовываем фильтры (свернуть/развернуть)
+                this.callbacks.onChange(this.state, true);
             });
 
             header.appendChild(checkbox);
             header.appendChild(label);
             header.appendChild(expandBtn);
-
             groupDiv.appendChild(header);
 
-            // Статусы внутри группы
             if (isExpanded && groupStatuses.length > 1) {
                 const items = document.createElement('div');
                 items.className = 'filters-group__items';
@@ -157,7 +152,8 @@ export class FiltersController {
                         } else {
                             this.state.selectedStatuses.delete(status);
                         }
-                        this.callbacks.onChange(this.state);
+                        // true — перерисовываем (чтобы обновить чекбокс группы)
+                        this.callbacks.onChange(this.state, true);
                     });
 
                     const icon = document.createElement('span');
@@ -190,7 +186,7 @@ export class FiltersController {
 
         this.container.appendChild(groupsWrapper);
 
-        // ====КНОПКА "СБРОСИТЬ"==============================
+        // ====СБРОС=========================================
         const resetBtn = document.createElement('button');
         resetBtn.className = 'filters-reset';
         resetBtn.textContent = 'Сбросить фильтры';
@@ -198,7 +194,8 @@ export class FiltersController {
             this.state.selectedStatuses = new Set(STATUS_ORDER);
             this.state.expandedGroups = new Set();
             this.state.searchQuery = '';
-            this.callbacks.onChange(this.state);
+            // true — перерисовываем (сбросить всё)
+            this.callbacks.onChange(this.state, true);
         });
         this.container.appendChild(resetBtn);
     }
@@ -206,17 +203,12 @@ export class FiltersController {
 
 // ====FILTER LOGIC===========================================
 
-/**
- * Применяет фильтры и поиск к списку клиентов.
- */
 export function applyFilters(clients: Client[], state: FilterState): Client[] {
     return clients.filter((client) => {
-        // Фильтр по статусу
         if (!state.selectedStatuses.has(client.status)) {
             return false;
         }
 
-        // Поиск
         if (state.searchQuery.trim()) {
             const query = state.searchQuery.toLowerCase().trim();
             const fields = [
@@ -238,9 +230,6 @@ export function applyFilters(clients: Client[], state: FilterState): Client[] {
 
 // ====DEFAULT STATE==========================================
 
-/**
- * Возвращает состояние фильтров по умолчанию (все статусы выбраны).
- */
 export function createDefaultFilterState(): FilterState {
     return {
         selectedStatuses: new Set(STATUS_ORDER),
