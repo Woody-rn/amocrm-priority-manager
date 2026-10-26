@@ -1,9 +1,9 @@
 import type { ClientStatus } from '../shared/types';
 import type { PageType } from '../shared/constants';
-import { URL_PATTERNS, STORAGE_KEYS } from '../shared/constants';
+import { STORAGE_KEYS, URL_PATTERNS } from '../shared/constants';
 import { StorageService } from '../shared/storage';
 import { buildClientIndexes } from '../shared/utils/build-client-indexes';
-import { extractNameFromElement, extractLeadIdFromElement } from '../shared/utils/parsers';
+import { extractLeadIdFromElement, extractNameFromElement } from '../shared/utils/parsers';
 import { StatusResolver } from './status-resolver';
 import { Highlighter } from './highlighter';
 import { QuickPanel } from './quick-panel';
@@ -101,7 +101,6 @@ class ContentApp {
             if (elements.length > 0) {
                 const firstEl = elements[0];
                 if (!firstEl.dataset.clientName) {
-                    // Если появились новые элементы, которые еще не подсвечены
                     this.render();
                 }
             }
@@ -161,7 +160,6 @@ class ContentApp {
             client.status = status;
             await this.storage.saveClient(client);
         } else {
-            // Если клиента нет, создаем его через экстрактор
             if (this.extractor) {
                 const newClient = this.extractor.extractClient(element);
                 if (newClient) {
@@ -194,15 +192,10 @@ class ContentApp {
 
     private async createHandle(): Promise<void> {
         const handle = new SidebarHandle(
-            () => this.openSidebar(),
             () => this.getSavedHandlePosition(),
             (top) => this.saveHandlePosition(top)
         );
         await handle.create();
-    }
-
-    private openSidebar(): void {
-        void chrome.runtime.sendMessage({ action: 'openSidebar' });
     }
 
     private async getSavedHandlePosition(): Promise<number> {

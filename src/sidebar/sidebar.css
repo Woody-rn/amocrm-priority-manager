@@ -18,6 +18,7 @@ body {
     box-sizing: border-box;
 }
 
+/* ====SECTIONS=============================================== */
 .sidebar-section {
     background: var(--bg-card, #ffffff);
     border-radius: 8px;
@@ -56,7 +57,7 @@ body {
 }
 
 .sidebar-section__header .sidebar-section__title {
-    margin: 0; /* Убираем отступ у заголовка внутри flex-контейнера */
+    margin: 0;
 }
 
 .sidebar-section__toggle {
@@ -403,35 +404,4 @@ body {
     font-weight: 600;
     padding: 0 1px;
     border-radius: 2px;
-}
-
-/* ====FOOTER================================================= */
-.sidebar-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: var(--bg-card, #fff);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-footer__help {
-    background: none;
-    border: none;
-    color: var(--primary-color, #2196f3);
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px;
-    font-family: inherit;
-}
-
-.sidebar-footer__help:hover {
-    text-decoration: underline;
-}
-
-.sidebar-footer__version {
-    color: var(--text-light, #999);
-    font-size: 11px;
-    font-family: monospace;
 }

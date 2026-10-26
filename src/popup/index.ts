@@ -49,17 +49,6 @@ class PopupApp {
     }
 
     private addEventListeners(): void {
-        // Открыть панель
-        document.getElementById('openSidebarBtn')?.addEventListener('click', () => {
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                if (tabs[0]?.id) {
-                    chrome.sidePanel.open({ tabId: tabs[0].id })
-                        .then(() => window.close())
-                        .catch((err) => console.error('[Popup] Ошибка открытия панели:', err));
-                }
-            });
-        });
-
         // Настройки (открываем с хэшем #settings)
         document.getElementById('openSettingsBtn')?.addEventListener('click', () => {
             void chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#settings') });

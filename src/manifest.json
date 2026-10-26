@@ -7,18 +7,15 @@
   "permissions": [
     "storage",
     "activeTab",
-    "sidePanel",
     "tabs"
   ],
   "host_permissions": [
-    "https://*.amocrm.ru/*"
+    "https://*.amocrm.ru/*",
+    "http://*.amocrm.ru/*"
   ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "AMO CRM Priority Manager"
-  },
-  "side_panel": {
-    "default_path": "sidebar/sidebar.html"
   },
   "options_page": "options/options.html",
   "background": {
@@ -41,7 +38,8 @@
         "sidebar/index.js",
         "sidebar/render.js",
         "sidebar/filters.js",
-        "shared/styles/common.css"
+        "shared/styles/common.css",
+        "shared/styles/theme.css"
       ],
       "matches": ["*://*.amocrm.ru/*"]
     }
