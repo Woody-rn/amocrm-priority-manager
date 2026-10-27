@@ -138,15 +138,14 @@ export class QuickPanel {
 
         const header = document.createElement('button');
         header.className = 'quick-panel__group-header';
-        header.style.backgroundColor = STATUS_CONFIG.cold_competitor.color;
+        header.style.backgroundColor = STATUS_CONFIG.cold_competitor_software.color;
         header.style.color = '#fff';
 
         const coldStatuses: ClientStatus[] = [
-            'cold_competitor',
+            'cold_competitor_software',
+            'cold_competitor_dealer',
             'cold_refusal_demo',
-            'cold_refusal_start',
-            'cold_price',
-            'cold_later'
+            'cold_refusal_start'
         ];
 
         const updateHeader = () => {
@@ -162,7 +161,27 @@ export class QuickPanel {
         items.className = 'quick-panel__group-items';
 
         coldStatuses.forEach((status) => {
-            items.appendChild(this.renderButton(status));
+            const config = STATUS_CONFIG[status];
+            const button = document.createElement('button');
+            button.className = 'quick-panel__button';
+            button.style.backgroundColor = config.color;
+            button.style.color = '#fff';
+            button.style.textAlign = 'left';
+            button.style.width = '100%'; // На всю ширину
+            button.textContent = `${config.icon} ${config.label}`; // Короткий label!
+
+            if (status === this.currentStatus) {
+                button.classList.add('quick-panel__button--current');
+            }
+
+            button.addEventListener('click', () => {
+                if (this.currentClientName) {
+                    this.onStatusSelect(this.currentClientName, status);
+                    this.hide();
+                }
+            });
+
+            items.appendChild(button);
         });
 
         header.addEventListener('click', (e) => {

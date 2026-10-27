@@ -130,8 +130,16 @@
 
 .quick-panel__group-items {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column; /* Столбик */
     gap: 6px;
+    padding-top: 6px;
+}
+
+/* Пунктирная обводка для конкурента-дилера */
+.priority-cold-dealer {
+    background-color: rgba(255, 152, 0, 0.15) !important;
+    border-radius: 8px !important;
+    border: 1px dashed #ff9800 !important;
 }
 
 /* ====HIGHLIGHT============================================= */

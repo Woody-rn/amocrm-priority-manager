@@ -61,10 +61,10 @@
     "message": "Страница /leads/detail:"
   },
   "helpTechTodoDesc": {
-    "message": "Ищет только ссылки на сделки внутри списка задач. Обертка не важна, главное чтобы у ссылки был класс js-navigate-link и href содержал /leads/detail/."
+    "message": "Ищет только ссылки на сделки внутри списка задач (класс js-navigate-link и href с /leads/detail/)."
   },
   "helpTechDetailDesc": {
-    "message": "Ищет поле с названием сделки по ID. На странице сделки это уникальный textarea."
+    "message": "Ищет поле с названием сделки (textarea#person_n). ID извлекается из тега span.tag."
   },
   "helpTechLeadId": {
     "message": "ID сделки извлекается из атрибута href (число после /leads/detail/) или из тега span.tag на странице сделки."

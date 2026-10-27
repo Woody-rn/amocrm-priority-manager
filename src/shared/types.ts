@@ -1,30 +1,21 @@
-/**
- * Ключи статусов клиента.
- * Формат: cold_* — подтипы "холодного" статуса.
- */
-export type ClientStatus =
-    | 'unclear'             // ❓ На уточнении
-    | 'new'                 // 🆕 Новый
-    | 'hot'                 // 🔥 Горячий
-    | 'warm'                // 🤔 Тёплый
-    | 'active'              // ⭐️ Действующий
-    | 'renewal'             // 🔄 Продление
-    | 'cold_competitor'     // ⚔️ Холодный: Конкурент
-    | 'cold_refusal_demo'   // 📉 Холодный: Отказ после демо
-    | 'cold_refusal_start'  // 🥶 Холодный: Отказ на старте
-    | 'cold_price'          // 💰 Холодный: Дорого
-    | 'cold_later'          // 🕐 Холодный: Не сейчас
-    | 'dead'                // 💀 Мёртвый
-    | 'not_target'          // 🚫 Нецелевой
-    | 'wild';               // 🍒 Wild (специальный, не сохраняется в БД)
+// ====СТАТУСЫ================================================
 
-export type StatusGroup =
-    | 'neutral'   // ❓ На уточнении
-    | 'active'    // 🆕🔥🤔 — активные
-    | 'current'   // ⭐️🔄 — действующие
-    | 'cold'      // ⚔️📉🥶💰🕐 — холодные
-    | 'archive'   // 💀🚫 — архив
-    | 'wild';     // 🍒 — специальная группа
+export type ClientStatus =
+    | 'new'                      // 🆕 Новый
+    | 'hot'                      // 🔥 Горячий
+    | 'warm'                     // 🤔 Тёплый
+    | 'active'                   // ⭐ Действующий
+    | 'renewal'                  // 🔄 Продление
+    | 'cold_competitor_software' // ⚔️ Конкурент ПО
+    | 'cold_competitor_dealer'   // 🏷️ Конкурент-дилер
+    | 'cold_refusal_demo'        // 📉 После демо
+    | 'cold_refusal_start'       // 🥶 На старте
+    | 'unclear'                  // ❓ На уточнении
+    | 'dead'                     // 💀 Мёртвый
+    | 'not_target'               // 🚫 Нецелевой
+    | 'wild';                    // 🍒 Wild
+
+export type StatusGroup = 'active' | 'current' | 'cold' | 'archive' | 'wild';
 
 export interface StatusConfig {
     label: string;
@@ -36,6 +27,8 @@ export interface StatusConfig {
     description: string;
     savable: boolean;
 }
+
+// ====КЛИЕНТ=================================================
 
 export interface Client {
     id: string;
@@ -50,9 +43,13 @@ export interface Client {
     updatedAt: string;
 }
 
+// ====ХРАНИЛИЩЕ==============================================
+
 export interface StorageData {
     clients: Client[];
 }
+
+// ====CHANGELOG==============================================
 
 export interface ChangelogCache {
     data: ChangelogData;
@@ -67,10 +64,10 @@ export interface ChangelogVersion {
 }
 
 export interface ChangelogData {
-    currentVersion: string;
-    features: string[];
     versions: ChangelogVersion[];
 }
+
+// ====СООБЩЕНИЯ==============================================
 
 export type MessageAction = 'openSidebar' | 'sidebarStateChanged';
 

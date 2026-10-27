@@ -34,7 +34,7 @@
     "message": "Use the popup (extension icon) for export/import and settings."
   },
   "logicTodoNew": {
-    "message": "New deal: added to DB with status 'New'."
+    "message": "New deal: added to DB with 'New' status."
   },
   "logicTodoExisting": {
     "message": "Deal already in DB: metadata is updated, but status is not reset."
@@ -61,10 +61,10 @@
     "message": "Page /leads/detail:"
   },
   "helpTechTodoDesc": {
-    "message": "Searches only for deal links within the task list. The wrapper doesn't matter, as long as the link has the js-navigate-link class and its href contains /leads/detail/."
+    "message": "Searches only for deal links within the task list (class js-navigate-link and href with /leads/detail/)."
   },
   "helpTechDetailDesc": {
-    "message": "Searches for the deal name field by ID. On the deal page, this is a unique textarea."
+    "message": "Searches for the deal name field (textarea#person_n). The ID is extracted from the span.tag."
   },
   "helpTechLeadId": {
     "message": "The deal ID is extracted from the href attribute (the number after /leads/detail/) or from the span.tag on the deal page."
