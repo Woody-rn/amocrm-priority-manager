@@ -20,18 +20,31 @@ export function renderFeatures(container: HTMLElement): void {
 
         const groupDiv = document.createElement('div');
         groupDiv.className = 'help-group';
-        groupDiv.innerHTML = `<h3>${GROUP_LABELS[group]}</h3>`;
+
+        const groupTitle = document.createElement('h3');
+        groupTitle.textContent = GROUP_LABELS[group];
+        groupDiv.appendChild(groupTitle);
+
+        const list = document.createElement('div');
+        list.className = 'help-status-list';
 
         groupStatuses.forEach((status) => {
             const config = STATUS_CONFIG[status];
-            groupDiv.innerHTML += `
-                <div class="help-status-item">
+
+            const item = document.createElement('div');
+            item.className = 'help-status-item';
+
+            item.innerHTML = `
+                <div class="help-status-header">
                     <span class="help-status-icon">${config.icon}</span>
-                    <span class="help-status-name" style="color: ${config.color}">${config.fullLabel}</span>
-                    <span class="help-status-desc">${config.description}</span>
+                    <span class="help-status-name">${config.fullLabel}</span>
                 </div>
+                <div class="help-status-desc">${config.description}</div>
             `;
+            list.appendChild(item);
         });
+
+        groupDiv.appendChild(list);
         statusesSection.appendChild(groupDiv);
     });
     container.appendChild(statusesSection);
@@ -57,16 +70,20 @@ export function renderFeatures(container: HTMLElement): void {
     logicSection.innerHTML = `
         <h2>🔄 ${t('helpLogic')}</h2>
         <div class="help-logic">
-            <p><strong>При открытии страницы «Задачи» (/todo):</strong></p>
-            <ul>
-                <li>${t('logicTodoNew')}</li>
-                <li>${t('logicTodoExisting')}</li>
-            </ul>
-            <p><strong>На странице карточки сделки (/leads/detail):</strong></p>
-            <ul>
-                <li>${t('logicDetailInDb')}</li>
-                <li>${t('logicDetailWild')}</li>
-            </ul>
+            <div class="help-logic-block">
+                <h4>При открытии страницы «Задачи» (/todo):</h4>
+                <ul>
+                    <li>${t('logicTodoNew')}</li>
+                    <li>${t('logicTodoExisting')}</li>
+                </ul>
+            </div>
+            <div class="help-logic-block">
+                <h4>На странице карточки сделки (/leads/detail):</h4>
+                <ul>
+                    <li>${t('logicDetailInDb')}</li>
+                    <li>${t('logicDetailWild')}</li>
+                </ul>
+            </div>
         </div>
     `;
     container.appendChild(logicSection);
@@ -92,20 +109,23 @@ export function renderFeatures(container: HTMLElement): void {
         }
 
         selectorsHtml += `
-            <li>
-                <strong>${pageName}</strong> <code>${selector}</code>
-                <p class="help-tech-desc">${description}</p>
-            </li>
+            <div class="help-tech-item">
+                <div class="help-tech-header">${pageName}</div>
+                <code class="help-tech-code">${selector}</code>
+                <div class="help-tech-desc">${description}</div>
+            </div>
         `;
     });
 
     techSection.innerHTML = `
         <h2>🛠 ${t('helpTechTitle')}</h2>
-        <p>${t('helpTechIntro')}</p>
-        <ul class="help-tech-list">
+        <p class="help-tech-intro">${t('helpTechIntro')}</p>
+        <div class="help-tech-list">
             ${selectorsHtml}
-        </ul>
-        <p><strong>${t('helpTechLeadId')}</strong></p>
+        </div>
+        <div class="help-tech-note">
+            <strong>${t('helpTechLeadId')}</strong>
+        </div>
     `;
     container.appendChild(techSection);
 }
