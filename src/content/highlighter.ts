@@ -94,8 +94,9 @@ export class Highlighter {
         badge.className = `${this.BADGE_CLASS} priority-badge-${this.getBadgeSuffix(status)}`;
         badge.textContent = `${config.icon} ${config.fullLabel}`;
 
+        // Добавляем класс, если цвет светлый
         if (this.isLightColor(status)) {
-            badge.style.color = '#333';
+            badge.classList.add('priority-badge-light');
         }
 
         element.appendChild(badge);
@@ -114,16 +115,10 @@ export class Highlighter {
         badge.className = `${this.BADGE_FIXED_CLASS} priority-badge-${this.getBadgeSuffix(status)}`;
         badge.textContent = `${config.icon} ${config.fullLabel}`;
 
+        // ВАЖНО: добавляем класс для светлых статусов, как в addInlineBadge
         if (this.isLightColor(status)) {
-            badge.style.color = '#333';
+            badge.classList.add('priority-badge-light');
         }
-
-        // --- ВЫРАВНИВАНИЕ ВПРАВО ---
-        badge.style.display = 'block';
-        badge.style.width = 'fit-content';
-        badge.style.marginLeft = 'auto';
-        badge.style.marginTop = '8px';
-        badge.style.marginRight = '16px'; // чтобы не прилипал к самому краю
 
         element.insertAdjacentElement('afterend', badge);
     }
@@ -159,6 +154,13 @@ export class Highlighter {
      * Светлые цвета — для них нужен тёмный текст.
      */
     private isLightColor(status: ClientStatus): boolean {
-        return status === 'warm' || status === 'unclear';
+        return (
+            status === 'warm' ||
+            status === 'unclear' ||
+            status === 'cold_competitor_software' ||
+            status === 'cold_competitor_dealer' ||
+            status === 'cold_refusal_demo' ||
+            status === 'cold_refusal_start'
+        );
     }
 }

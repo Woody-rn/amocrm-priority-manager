@@ -1,5 +1,5 @@
 import type { Client, ClientStatus } from '../shared/types';
-import { STATUS_CONFIG, STATUS_ORDER, GROUP_ORDER, GROUP_LABELS } from '../shared/statuses';
+import { GROUP_LABELS, GROUP_ORDER, STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
 
 // ====RENDER STATS===========================================
 
@@ -43,7 +43,7 @@ export function renderStats(container: HTMLElement, clients: Client[]): void {
             const count = clients.filter((c) => c.status === status).length;
             if (count === 0) return;
 
-            const config = STATUS_CONFIG[status];
+            const config = STATUS_CONFIG[status] || STATUS_CONFIG.unknown;
             const row = document.createElement('div');
             row.className = 'stat-item';
             row.innerHTML = `
@@ -108,9 +108,9 @@ export function renderClients(
 function renderClientItem(
     client: Client,
     searchQuery: string,
-    baseUrl: string, // Добавлен аргумент
-    callbacks: ClientCallbacks
-): HTMLElement {
+    baseUrl: string,
+    callbacks: ClientCallbacks): HTMLElement {
+
     const config = STATUS_CONFIG[client.status];
 
     const item = document.createElement('div');

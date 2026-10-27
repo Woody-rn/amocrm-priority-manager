@@ -4,10 +4,6 @@ import { PANEL_HIDE_DELAY } from '../shared/constants';
 
 // ====QUICK PANEL=============================================
 
-/**
- * Панель выбора статуса, появляющаяся при наведении на сделку.
- * Группа "Холодные" сворачивается по клику.
- */
 export class QuickPanel {
     private element: HTMLElement | null = null;
     private currentClientName: string | null = null;
@@ -19,9 +15,6 @@ export class QuickPanel {
         private onStatusSelect: (clientName: string, status: ClientStatus) => void
     ) {}
 
-    /**
-     * Показывает панель рядом с элементом.
-     */
     show(anchor: HTMLElement, clientName: string, currentStatus: ClientStatus): void {
         this.hide();
 
@@ -31,17 +24,13 @@ export class QuickPanel {
 
         this.element = this.render();
 
-        // Позиционирование
         const rect = anchor.getBoundingClientRect();
         const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
 
-        // Примерная ширина панели для проверки
         const panelWidth = 350;
+        let leftPosition = rect.right + scrollX + 10;
 
-        let leftPosition = rect.right + scrollX + 10; // По умолчанию справа
-
-        // Если панель не влезает по правому краю — показываем слева
         if (rect.right + panelWidth > window.innerWidth) {
             leftPosition = rect.left + scrollX - panelWidth - 10;
         }
@@ -53,9 +42,6 @@ export class QuickPanel {
         document.body.appendChild(this.element);
     }
 
-    /**
-     * Скрывает панель с задержкой.
-     */
     hideWithDelay(): void {
         if (this.hideTimeout) clearTimeout(this.hideTimeout);
         this.hideTimeout = setTimeout(() => {
@@ -65,9 +51,6 @@ export class QuickPanel {
         }, PANEL_HIDE_DELAY);
     }
 
-    /**
-     * Скрывает панель немедленно.
-     */
     hide(): void {
         if (this.hideTimeout) {
             clearTimeout(this.hideTimeout);
@@ -89,11 +72,11 @@ export class QuickPanel {
             this.hide();
         });
 
-        panel.appendChild(this.renderRow(['unclear']));
         panel.appendChild(this.renderRow(['new', 'hot', 'warm']));
         panel.appendChild(this.renderRow(['active', 'renewal']));
         panel.appendChild(this.renderColdGroup());
         panel.appendChild(this.renderRow(['dead', 'not_target']));
+        panel.appendChild(this.renderRow(['unclear']));
 
         return panel;
     }
@@ -111,12 +94,11 @@ export class QuickPanel {
         const config = STATUS_CONFIG[status];
         const button = document.createElement('button');
         button.className = 'quick-panel__button';
-        button.style.backgroundColor = config.color;
-        button.textContent = `${config.icon} ${config.fullLabel}`;
 
-        if (status === 'warm' || status === 'unclear') {
-            button.style.color = '#333';
-        }
+        // Только рамка берет цвет из конфига, текст остается черным (из CSS)
+        button.style.borderColor = config.color;
+
+        button.textContent = `${config.icon} ${config.fullLabel}`;
 
         if (status === this.currentStatus) {
             button.classList.add('quick-panel__button--current');
@@ -138,8 +120,8 @@ export class QuickPanel {
 
         const header = document.createElement('button');
         header.className = 'quick-panel__group-header';
-        header.style.backgroundColor = STATUS_CONFIG.cold_competitor_software.color;
-        header.style.color = '#fff';
+        header.style.borderColor = STATUS_CONFIG.cold_competitor_software.color;
+        header.style.border = '2px solid';
 
         const coldStatuses: ClientStatus[] = [
             'cold_competitor_software',
@@ -164,11 +146,13 @@ export class QuickPanel {
             const config = STATUS_CONFIG[status];
             const button = document.createElement('button');
             button.className = 'quick-panel__button';
-            button.style.backgroundColor = config.color;
-            button.style.color = '#fff';
+
+            // Только рамка берет цвет из конфига
+            button.style.borderColor = config.color;
             button.style.textAlign = 'left';
-            button.style.width = '100%'; // На всю ширину
-            button.textContent = `${config.icon} ${config.label}`; // Короткий label!
+            button.style.width = '100%';
+
+            button.textContent = `${config.icon} ${config.label}`;
 
             if (status === this.currentStatus) {
                 button.classList.add('quick-panel__button--current');

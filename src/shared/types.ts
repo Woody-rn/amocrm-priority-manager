@@ -13,7 +13,8 @@ export type ClientStatus =
     | 'unclear'                  // ❓ На уточнении
     | 'dead'                     // 💀 Мёртвый
     | 'not_target'               // 🚫 Нецелевой
-    | 'wild';                    // 🍒 Wild
+    | 'wild'                     // 🍒 Wild
+    | 'unknown';                 // unknown status
 
 export type StatusGroup = 'active' | 'current' | 'cold' | 'archive' | 'wild';
 
