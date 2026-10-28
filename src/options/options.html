@@ -55,6 +55,17 @@
 
                 <hr style="margin: 32px 0; border: none; border-top: 1px solid var(--border-color, #eee);">
 
+                <div class="cloud-section">
+                    <h2>☁️ Синхронизация с Яндекс.Диском</h2>
+                    <div class="cloud-controls">
+                        <button id="cloudConnectBtn" class="btn">🔗 Подключить</button>
+                        <button id="cloudUploadBtn" class="btn btn-primary" disabled>💾 Сохранить в облако</button>
+                    </div>
+                    <div class="cloud-status" id="cloudStatus">⚪ Не подключено</div>
+                    <h3>Список бэкапов</h3>
+                    <div class="cloud-backups" id="cloudBackups"></div>
+                </div>
+
                 <h2>Резервное копирование</h2>
                 <div class="options-actions" style="margin-bottom: 24px;">
                     <button id="exportBtn" class="btn">📤 Экспорт JSON</button>

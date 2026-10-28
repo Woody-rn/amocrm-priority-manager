@@ -430,3 +430,74 @@ body {
     padding: 3px 0;
     font-size: 14px;
 }
+
+/* ====CLOUD SYNC============================================= */
+.cloud-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color, #eee);
+}
+
+.cloud-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.cloud-status {
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: var(--text-muted, #666);
+}
+
+.cloud-backups {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.cloud-backup-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-body, #f9f9f9);
+    border-radius: 8px;
+}
+
+.cloud-backup-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.cloud-backup-date {
+    font-size: 12px;
+    color: var(--text-light, #999);
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    background: var(--bg-card, #fff);
+    cursor: pointer;
+}
+
+.btn-small:hover {
+    background: var(--bg-hover, #f0f0f0);
+}
+
+.cloud-empty, .cloud-error {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-light, #999);
+    font-size: 13px;
+}
+
+.cloud-error {
+    color: var(--danger-color, #f44336);
+}

@@ -6,12 +6,14 @@ import { applyTheme } from '../shared/utils/theme';
 import type { Client, ChangelogData } from '../shared/types';
 import { renderFeatures } from './components/render-features';
 import { renderHistory } from './components/render-history';
+import { YandexDiskStorage } from '../shared/cloud/YandexDiskStorage';
 
 // ====OPTIONS APP============================================
 
 class OptionsApp {
     private storage = new StorageService();
     private settingsService = new SettingsService();
+    private cloudStorage = new YandexDiskStorage();
     private chart: Chart | null = null;
 
     async init(): Promise<void> {
@@ -23,6 +25,7 @@ class OptionsApp {
         this.addEventListeners();
         await this.renderChart();
         await this.renderFeaturesAndHistory();
+        await this.setupCloud();
     }
 
     private renderVersion(): void {
@@ -154,6 +157,104 @@ class OptionsApp {
         });
 
         await applyTheme();
+    }
+
+    // ====CLOUD SYNC (YANDEX.DISK)============================
+
+    private async setupCloud(): Promise<void> {
+        const connectBtn = document.getElementById('cloudConnectBtn') as HTMLButtonElement;
+        const uploadBtn = document.getElementById('cloudUploadBtn') as HTMLButtonElement;
+        const statusEl = document.getElementById('cloudStatus');
+        const backupsEl = document.getElementById('cloudBackups');
+
+        if (!connectBtn || !uploadBtn || !statusEl || !backupsEl) return;
+
+        const updateUI = async () => {
+            const connected = await this.cloudStorage.isConnected();
+            statusEl.textContent = connected ? '🟢 Подключено' : '⚪ Не подключено';
+            uploadBtn.disabled = !connected;
+            if (connected) {
+                await renderBackups();
+            } else {
+                backupsEl.innerHTML = '';
+            }
+        };
+
+        const renderBackups = async () => {
+            try {
+                const files = await this.cloudStorage.listBackups();
+                if (files.length === 0) {
+                    backupsEl.innerHTML = '<div class="cloud-empty">Нет бэкапов</div>';
+                    return;
+                }
+                backupsEl.innerHTML = files.map(f => `
+                    <div class="cloud-backup-item">
+                        <span class="cloud-backup-name">${f.name}</span>
+                        <span class="cloud-backup-date">${new Date(f.modified).toLocaleString('ru-RU')}</span>
+                        <button data-path="${f.path}" class="btn-small">📥 Восстановить</button>
+                    </div>
+                `).join('');
+
+                backupsEl.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const path = (e.target as HTMLElement).dataset.path;
+                        if (path) await this.restoreBackup(path);
+                    });
+                });
+            } catch (e) {
+                console.error(e);
+                backupsEl.innerHTML = '<div class="cloud-error">Ошибка загрузки списка</div>';
+            }
+        };
+
+        connectBtn.addEventListener('click', async () => {
+            try {
+                statusEl.textContent = '⏳ Подключение...';
+                await this.cloudStorage.connect();
+                await updateUI();
+            } catch (e) {
+                console.error(e);
+                statusEl.textContent = '🔴 Ошибка авторизации';
+            }
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            try {
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = '⏳ Сохранение...';
+                const clients = await this.storage.getAllClients();
+                const json = JSON.stringify(clients, null, 2);
+                const filename = `amo-clients-${new Date().toISOString().split('T')[0]}.json`;
+                await this.cloudStorage.upload(json, filename);
+                await renderBackups();
+                alert('Бэкап сохранен в Яндекс.Диск!');
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка сохранения: ' + (e as Error).message);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '💾 Сохранить в облако';
+            }
+        });
+
+        await updateUI();
+    }
+
+    private async restoreBackup(path: string): Promise<void> {
+        if (!confirm('Восстановить базу из этого бэкапа? Текущие данные будут перезаписаны!')) return;
+
+        try {
+            const data = await this.cloudStorage.download(path);
+            if (!data) throw new Error('Пустой файл');
+
+            const imported = JSON.parse(data);
+            await this.storage.saveAllClients(imported);
+            await this.renderChart();
+            alert(`База восстановлена! Записей: ${imported.length}`);
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка восстановления: ' + (e as Error).message);
+        }
     }
 
     // ====ACTIONS (Экспорт/Импорт/Очистка)====================
