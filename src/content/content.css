@@ -291,3 +291,9 @@
         background-position: 0% 50%;
     }
 }
+
+/* ====SIDEBAR IFRAME RESIZE HANDLE=========================== */
+#amocrm-sidebar-container:hover .sidebar-resize-handle,
+.sidebar-resize-handle:hover {
+    background-color: rgba(108, 92, 207, 0.1); /* Легкий фиолетовый оттенок */
+}

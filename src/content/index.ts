@@ -1,6 +1,6 @@
 import type { ClientStatus } from '../shared/types';
 import type { PageType } from '../shared/constants';
-import { STORAGE_KEYS, URL_PATTERNS } from '../shared/constants';
+import { STORAGE_KEYS, URL_PATTERNS, SIDEBAR_DEFAULT_WIDTH } from '../shared/constants';
 import { StorageService } from '../shared/storage';
 import { buildClientIndexes } from '../shared/utils/build-client-indexes';
 import { extractLeadIdFromElement, extractNameFromElement } from '../shared/utils/parsers';
@@ -193,7 +193,9 @@ class ContentApp {
     private async createHandle(): Promise<void> {
         const handle = new SidebarHandle(
             () => this.getSavedHandlePosition(),
-            (top) => this.saveHandlePosition(top)
+            (top) => this.saveHandlePosition(top),
+            () => this.getSavedSidebarWidth(),
+            (width) => this.saveSidebarWidth(width)
         );
         await handle.create();
     }
@@ -205,6 +207,15 @@ class ContentApp {
 
     private async saveHandlePosition(top: number): Promise<void> {
         await chrome.storage.local.set({ [STORAGE_KEYS.handlePosition]: top });
+    }
+
+    private async getSavedSidebarWidth(): Promise<number> {
+        const result = await chrome.storage.local.get(STORAGE_KEYS.sidebarWidth);
+        return (result[STORAGE_KEYS.sidebarWidth] as number) || SIDEBAR_DEFAULT_WIDTH;
+    }
+
+    private async saveSidebarWidth(width: number): Promise<void> {
+        await chrome.storage.local.set({ [STORAGE_KEYS.sidebarWidth]: width });
     }
 }
 
