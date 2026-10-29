@@ -26,7 +26,8 @@ export const STORAGE_KEYS = {
     changelogCache: 'changelogCache',
     helpOpen: 'helpOpen',
     filterState: 'filterState',
-    settings: 'settings'
+    settings: 'settings',
+    sidebarCollapsedState: 'sidebarCollapsedState',
 } as const;
 
 // ====SIDEBAR HANDLE (ручка "Панель")========================

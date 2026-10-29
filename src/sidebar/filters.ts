@@ -163,7 +163,6 @@ export class FiltersController {
                     const name = document.createElement('span');
                     name.className = 'filters-group__item-name';
                     name.textContent = config.label;
-                    name.style.color = config.color;
 
                     const count = document.createElement('span');
                     count.className = 'filters-group__item-count';

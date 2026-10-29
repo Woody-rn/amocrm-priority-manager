@@ -3,7 +3,7 @@ import { STORAGE_KEYS } from '../shared/constants';
 import { StorageService } from '../shared/storage';
 import { STATUS_ORDER } from '../shared/statuses';
 import { SettingsService } from '../shared/settings';
-import { renderStats, renderClients } from './render';
+import { renderClients } from './render';
 import {
     FiltersController,
     applyFilters,
@@ -11,6 +11,7 @@ import {
     type FilterState
 } from './filters';
 import { applyTheme } from '../shared/utils/theme';
+import { CollapsedStateService, type CollapsedState } from './collapsed-state.service';
 
 // ====STORAGE FOR FILTERS====================================
 
@@ -47,8 +48,10 @@ async function saveFilterState(state: FilterState): Promise<void> {
 class SidebarApp {
     private storage = new StorageService();
     private settingsService = new SettingsService();
+    private collapsedStateService = new CollapsedStateService();
     private allClients: Client[] = [];
     private filterState: FilterState = createDefaultFilterState();
+    private collapsedState: CollapsedState = { sections: {} };
     private filtersController: FiltersController | null = null;
     private baseUrl: string = '';
 
@@ -58,6 +61,8 @@ class SidebarApp {
         this.baseUrl = settings.baseUrl;
 
         this.filterState = await loadFilterState();
+        this.collapsedState = await this.collapsedStateService.getState();
+
         await this.refresh();
         this.setupFilters();
         this.setupToggles();
@@ -72,11 +77,6 @@ class SidebarApp {
     }
 
     private render(): void {
-        const statsContainer = document.getElementById('statsList');
-        if (statsContainer) {
-            renderStats(statsContainer, this.allClients);
-        }
-
         this.renderClientsList();
 
         if (this.filtersController) {
@@ -135,18 +135,26 @@ class SidebarApp {
         const headers = document.querySelectorAll('.sidebar-section__header');
 
         headers.forEach(header => {
+            const targetId = (header as HTMLElement).dataset.target;
+            if (!targetId) return;
+
+            const content = document.getElementById(targetId);
+            const button = header.querySelector('.sidebar-section__toggle');
+            if (!content || !button) return;
+
+            // Применяем сохраненное состояние
+            const isCollapsed = this.collapsedState.sections[targetId] || false;
+            content.style.display = isCollapsed ? 'none' : 'block';
+            button.textContent = isCollapsed ? '▶' : '▼';
+
             header.addEventListener('click', () => {
-                const targetId = (header as HTMLElement).dataset.target;
-                if (!targetId) return;
+                const isHidden = content.style.display === 'none';
+                content.style.display = isHidden ? 'block' : 'none';
+                button.textContent = isHidden ? '▼' : '▶';
 
-                const content = document.getElementById(targetId);
-                const button = header.querySelector('.sidebar-section__toggle');
-
-                if (content && button) {
-                    const isHidden = content.style.display === 'none';
-                    content.style.display = isHidden ? 'block' : 'none';
-                    button.textContent = isHidden ? '▼' : '▶';
-                }
+                // Сохраняем состояние
+                this.collapsedState.sections[targetId] = !isHidden;
+                void this.collapsedStateService.saveState(this.collapsedState);
             });
         });
     }

@@ -1,72 +1,5 @@
 import type { Client, ClientStatus } from '../shared/types';
-import { GROUP_LABELS, GROUP_ORDER, STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
-
-// ====RENDER STATS===========================================
-
-export function renderStats(container: HTMLElement, clients: Client[]): void {
-    container.innerHTML = '';
-
-    // 1. Всего клиентов
-    const total = document.createElement('div');
-    total.className = 'stats-total';
-    total.innerHTML = `<span class="stats-total-label">Всего клиентов</span><span class="stats-total-count">${clients.length}</span>`;
-    container.appendChild(total);
-
-    // 2. Группы статусов
-    GROUP_ORDER.forEach((group) => {
-        const groupStatuses = STATUS_ORDER.filter((s) => STATUS_CONFIG[s].group === group);
-        if (groupStatuses.length === 0) return;
-
-        const groupCount = clients.filter((c) => groupStatuses.includes(c.status)).length;
-
-        // Показываем только непустые группы
-        if (groupCount === 0) return;
-
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'stats-group';
-
-        // Заголовок группы
-        const header = document.createElement('div');
-        header.className = 'stats-group__header';
-        header.innerHTML = `
-            <span class="stats-group__title">${GROUP_LABELS[group]}</span>
-            <span class="stats-group__count">${groupCount}</span>
-            <button class="stats-group__toggle">▼</button>
-        `;
-        groupDiv.appendChild(header);
-
-        // Детализация по статусам
-        const details = document.createElement('div');
-        details.className = 'stats-group__details';
-
-        groupStatuses.forEach((status) => {
-            const count = clients.filter((c) => c.status === status).length;
-            if (count === 0) return;
-
-            const config = STATUS_CONFIG[status] || STATUS_CONFIG.unknown;
-            const row = document.createElement('div');
-            row.className = 'stat-item';
-            row.innerHTML = `
-                <span class="stat-icon">${config.icon}</span>
-                <span class="stat-label">${config.label}</span>
-                <span class="stat-count">${count}</span>
-            `;
-            details.appendChild(row);
-        });
-
-        groupDiv.appendChild(details);
-
-        // Логика сворачивания
-        header.addEventListener('click', () => {
-            const isHidden = details.style.display === 'none';
-            details.style.display = isHidden ? 'block' : 'none';
-            const btn = header.querySelector('.stats-group__toggle');
-            if (btn) btn.textContent = isHidden ? '▼' : '▶';
-        });
-
-        container.appendChild(groupDiv);
-    });
-}
+import { STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
 
 // ====RENDER CLIENTS=========================================
 
@@ -79,7 +12,7 @@ export function renderClients(
     container: HTMLElement,
     clients: Client[],
     searchQuery: string,
-    baseUrl: string, // Добавлен аргумент
+    baseUrl: string,
     callbacks: ClientCallbacks
 ): void {
     container.innerHTML = '';
@@ -122,7 +55,6 @@ function renderClientItem(
 
     if (client.leadId) {
         const link = document.createElement('a');
-        // Используем переданный baseUrl, fallback на пустую строку (относительный путь)
         link.href = baseUrl ? `${baseUrl}/leads/detail/${client.leadId}` : `/leads/detail/${client.leadId}`;
         link.className = 'client-link';
         link.title = 'Открыть сделку в amoCRM';
