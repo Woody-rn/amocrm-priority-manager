@@ -9,7 +9,8 @@
     "storage",
     "activeTab",
     "tabs",
-    "identity"
+    "identity",
+    "webNavigation"
   ],
   "host_permissions": [
     "https://*.amocrm.ru/*",

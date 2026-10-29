@@ -68,5 +68,17 @@
   },
   "helpTechLeadId": {
     "message": "ID сделки извлекается из атрибута href (число после /leads/detail/) или из тега span.tag на странице сделки."
+  },
+  "helpTechSyncTitle": {
+    "message": "Механизм обновления данных"
+  },
+  "helpTechSyncDesc": {
+    "message": "Расширение использует комбинацию фоновых и контентных скриптов для отслеживания изменений:"
+  },
+  "helpTechSyncList": {
+    "message": "1. <strong>chrome.webNavigation</strong> (в background.ts) — ловит любые SPA-переходы (включая пагинацию на /todo и смену страниц), так как перехватывает pushState/replaceState на уровне браузера.<br>2. <strong>MutationObserver</strong> (в content/index.ts) — следит за document.body и используется как fallback для появления модальных окон (когда URL не меняется, но появляется textarea#person_n)."
+  },
+  "helpTechSyncDebounce": {
+    "message": "<strong>Задержка:</strong> После смены URL расширение ждет 100 мс, чтобы amoCRM успела отрисовать новые строки в DOM, и только потом запускает сбор данных."
   }
 }

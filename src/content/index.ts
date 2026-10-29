@@ -31,12 +31,12 @@ class ContentApp {
         this.urlWatcher.start();
         this.startDomObserver();
         this.addEventListeners();
+        this.setupBackgroundListener(); // <-- Слушаем фон
     }
 
     private async refresh(): Promise<void> {
         let pageType = this.detectPage();
 
-        // Костыль для SPA: если URL не поменялся, но textarea появилась (модалка)
         if (document.querySelector('textarea#person_n') && pageType !== 'leadsDetail') {
             pageType = 'leadsDetail';
         }
@@ -92,6 +92,8 @@ class ContentApp {
         }
     }
 
+    // ====OBSERVERS============================================
+
     private startDomObserver(): void {
         if (this.domObserver) this.domObserver.disconnect();
 
@@ -100,6 +102,7 @@ class ContentApp {
             const elements = this.extractor.findElements();
             if (elements.length > 0) {
                 const firstEl = elements[0];
+                // Если у первого элемента нет нашего маркера, значит DOM перерисовался (например, модалка)
                 if (!firstEl.dataset.clientName) {
                     this.render();
                 }
@@ -111,6 +114,8 @@ class ContentApp {
             subtree: true
         });
     }
+
+    // ====EVENTS===============================================
 
     private addEventListeners(): void {
         document.addEventListener('mouseover', (e) => {
@@ -137,6 +142,17 @@ class ContentApp {
         document.addEventListener('click', (e) => {
             if (!(e.target as HTMLElement).closest('.quick-panel')) {
                 this.quickPanel.hide();
+            }
+        });
+    }
+
+    // ====BACKGROUND MESSAGES==================================
+
+    private setupBackgroundListener(): void {
+        chrome.runtime.onMessage.addListener((message) => {
+            if (message.action === 'urlChanged') {
+                console.log('[ContentApp] URL changed via background, updating...');
+                void this.handleUrlChange(message.url);
             }
         });
     }
@@ -172,11 +188,20 @@ class ContentApp {
         await this.refresh();
     }
 
+    // ====URL==================================================
+
     private async handleUrlChange(url: string): Promise<void> {
         const newPageType = this.detectPageByUrl(url);
-        if (newPageType === this.pageType) return;
-        this.highlighter.clearAll();
-        await this.refresh();
+
+        // Если URL изменился (например, пагинация), но тип страницы тот же
+        // или тип страницы изменился (переход в карточку) - обновляем всё
+        if (newPageType === this.pageType || newPageType !== null) {
+            this.highlighter.clearAll();
+            // Небольшая задержка, чтобы DOM успел обновиться после смены URL
+            setTimeout(async () => {
+                await this.refresh();
+            }, 100);
+        }
     }
 
     private detectPage(): PageType | null {
@@ -189,6 +214,8 @@ class ContentApp {
         if (URL_PATTERNS.leadsList.test(url)) return 'leadsList';
         return null;
     }
+
+    // ====HANDLE===============================================
 
     private async createHandle(): Promise<void> {
         const handle = new SidebarHandle(

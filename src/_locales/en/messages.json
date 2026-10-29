@@ -68,5 +68,17 @@
   },
   "helpTechLeadId": {
     "message": "The deal ID is extracted from the href attribute (the number after /leads/detail/) or from the span.tag on the deal page."
+  },
+  "helpTechSyncTitle": {
+    "message": "Data update mechanism"
+  },
+  "helpTechSyncDesc": {
+    "message": "The extension uses a combination of background and content scripts to track changes:"
+  },
+  "helpTechSyncList": {
+    "message": "1. <strong>chrome.webNavigation</strong> (in background.ts) — catches any SPA navigation (including pagination on /todo and page switching) as it intercepts pushState/replaceState at the browser level.<br>2. <strong>MutationObserver</strong> (in content/index.ts) — watches document.body and serves as a fallback for modal windows (when the URL doesn't change but textarea#person_n appears)."
+  },
+  "helpTechSyncDebounce": {
+    "message": "<strong>Delay:</strong> After a URL change, the extension waits 100ms to let amoCRM render new rows in the DOM, and only then starts collecting data."
   }
 }
