@@ -48,8 +48,24 @@ function renderClientItem(
 
     const item = document.createElement('div');
     item.className = 'client-item';
+    item.style.borderLeftColor = config.color;
 
-    // Имя + ссылка
+    // 1. Слой удаления (прогресс-бар)
+    const deleteOverlay = document.createElement('div');
+    deleteOverlay.className = 'client-item__delete-overlay';
+
+    const deleteText = document.createElement('span');
+    deleteText.className = 'client-item__delete-text';
+    deleteText.textContent = 'Удаление...';
+
+    const deleteProgress = document.createElement('div');
+    deleteProgress.className = 'client-item__delete-progress';
+
+    deleteOverlay.appendChild(deleteProgress);
+    deleteOverlay.appendChild(deleteText);
+    item.appendChild(deleteOverlay);
+
+    // 2. Имя + ссылка (контент)
     const nameWrapper = document.createElement('div');
     nameWrapper.className = 'client-name-wrapper';
 
@@ -76,7 +92,7 @@ function renderClientItem(
     nameWrapper.appendChild(name);
     item.appendChild(nameWrapper);
 
-    // Селект статуса
+    // 3. Селект статуса
     const select = document.createElement('select');
     select.className = 'client-status-select';
     select.dataset.clientId = client.id;
@@ -98,25 +114,55 @@ function renderClientItem(
 
     item.appendChild(select);
 
-    // Дата
-    const date = document.createElement('span');
-    date.className = 'client-date';
-    date.textContent = new Date(client.updatedAt).toLocaleDateString('ru-RU');
-    item.appendChild(date);
+    // ==== ЛОГИКА УДЕРЖАНИЯ ДЛЯ УДАЛЕНИЯ ====
 
-    // Удалить
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'client-delete-btn';
-    deleteBtn.textContent = '✕';
-    deleteBtn.title = 'Удалить клиента';
-    deleteBtn.addEventListener('click', () => {
-        if (confirm(`Удалить "${client.name}"?`)) {
-            callbacks.onDelete(client.id);
+    let isHolding = false;
+    let holdTimeout: ReturnType<typeof setTimeout>;
+    let startX = 0;
+    let startY = 0;
+
+    const cancelHold = () => {
+        isHolding = false;
+        item.classList.remove('client-item--deleting');
+        clearTimeout(holdTimeout);
+    };
+
+    const startHold = (e: MouseEvent) => {
+        // Игнорируем клики по интерактивным элементам и правую кнопку мыши
+        const target = e.target as HTMLElement;
+        if (e.button !== 0 || target.closest('select') || target.closest('a')) {
+            return;
         }
-    });
-    item.appendChild(deleteBtn);
 
-    item.style.borderLeftColor = config.color;
+        isHolding = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        // Добавляем класс, который запускает CSS-анимацию
+        item.classList.add('client-item--deleting');
+
+        // По завершении анимации (2 сек) удаляем
+        holdTimeout = setTimeout(() => {
+            if (isHolding) {
+                isHolding = false;
+                callbacks.onDelete(client.id);
+            }
+        }, 1200);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+        if (!isHolding) return;
+        // Если пользователь сдвинул мышь больше чем на 10px (например, скроллит) - отменяем
+        const distance = Math.sqrt(Math.pow(e.clientX - startX, 2) + Math.pow(e.clientY - startY, 2));
+        if (distance > 10) {
+            cancelHold();
+        }
+    };
+
+    item.addEventListener('mousedown', startHold);
+    item.addEventListener('mouseup', cancelHold);
+    item.addEventListener('mouseleave', cancelHold);
+    item.addEventListener('mousemove', onMouseMove);
 
     return item;
 }
