@@ -169,24 +169,18 @@ class OptionsApp {
 
         if (!connectBtn || !uploadBtn || !statusEl || !backupsEl) return;
 
-        const updateUI = async () => {
-            const connected = await this.cloudStorage.isConnected();
-            statusEl.textContent = connected ? '🟢 Подключено' : '⚪ Не подключено';
-            uploadBtn.disabled = !connected;
-            if (connected) {
-                await renderBackups();
-            } else {
-                backupsEl.innerHTML = '';
-            }
-        };
-
+        // Функция отрисовки списка
         const renderBackups = async () => {
             try {
+                backupsEl.innerHTML = '<div class="cloud-loading">⏳ Загрузка списка...</div>';
+
                 const files = await this.cloudStorage.listBackups();
+
                 if (files.length === 0) {
-                    backupsEl.innerHTML = '<div class="cloud-empty">Нет бэкапов</div>';
+                    backupsEl.innerHTML = '<div class="cloud-empty">Бэкапов пока нет. Нажмите «Сохранить в облако», чтобы создать первый.</div>';
                     return;
                 }
+
                 backupsEl.innerHTML = files.map(f => `
                     <div class="cloud-backup-item">
                         <span class="cloud-backup-name">${f.name}</span>
@@ -203,10 +197,31 @@ class OptionsApp {
                 });
             } catch (e) {
                 console.error(e);
-                backupsEl.innerHTML = '<div class="cloud-error">Ошибка загрузки списка</div>';
+                backupsEl.innerHTML = '<div class="cloud-error">⚠️ Ошибка загрузки списка бэкапов. Проверьте подключение.</div>';
             }
         };
 
+        // Функция обновления статуса и кнопок
+        const updateUI = async () => {
+            const connected = await this.cloudStorage.isConnected();
+
+            if (connected) {
+                statusEl.textContent = '🟢 Подключено';
+                statusEl.style.color = 'var(--success-color, #4caf50)';
+                uploadBtn.disabled = false;
+            } else {
+                statusEl.textContent = '⚪ Не подключено';
+                statusEl.style.color = 'var(--text-muted, #666)';
+                uploadBtn.disabled = true;
+                // Если не подключено — сразу показываем заглушку
+                backupsEl.innerHTML = '<div class="cloud-empty">Подключитесь к Яндекс.Диску, чтобы увидеть бэкапы.</div>';
+                return; // Прерываем, чтобы не пытаться загрузить список
+            }
+
+            await renderBackups();
+        };
+
+        // Обработчик кнопки "Подключить"
         connectBtn.addEventListener('click', async () => {
             try {
                 statusEl.textContent = '⏳ Подключение...';
@@ -215,9 +230,13 @@ class OptionsApp {
             } catch (e) {
                 console.error(e);
                 statusEl.textContent = '🔴 Ошибка авторизации';
+                statusEl.style.color = 'var(--danger-color, #f44336)';
+                // Показываем ошибку в списке
+                backupsEl.innerHTML = '<div class="cloud-error">⚠️ Не удалось авторизоваться. Проверьте настройки приложения в Яндекс OAuth.</div>';
             }
         });
 
+        // Обработчик кнопки "Сохранить в облако"
         uploadBtn.addEventListener('click', async () => {
             try {
                 uploadBtn.disabled = true;
@@ -237,6 +256,7 @@ class OptionsApp {
             }
         });
 
+        // Инициализация при загрузке страницы
         await updateUI();
     }
 

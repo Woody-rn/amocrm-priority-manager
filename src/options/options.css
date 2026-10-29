@@ -225,6 +225,105 @@ body {
     color: var(--text-light, #888);
 }
 
+/* ====CLOUD SYNC============================================= */
+.cloud-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color, #eee);
+}
+
+.cloud-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.cloud-status {
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: var(--text-muted, #666);
+}
+
+.cloud-backups {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 60px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 24px;
+}
+
+.cloud-backup-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-body, #f9f9f9);
+    border-radius: 8px;
+}
+
+.cloud-backup-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.cloud-backup-date {
+    font-size: 12px;
+    color: var(--text-light, #999);
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    background: var(--bg-card, #fff);
+    cursor: pointer;
+}
+
+.btn-small:hover {
+    background: var(--bg-hover, #f0f0f0);
+}
+
+/* Заглушка, если нет бэкапов */
+.cloud-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--bg-body, #f9f9f9);
+    border: 1px dashed var(--border-color, #ddd);
+    border-radius: 8px;
+    color: var(--text-muted, #666);
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Состояние загрузки */
+.cloud-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: var(--text-muted, #666);
+    font-size: 13px;
+}
+
+/* Ошибка */
+.cloud-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(244, 67, 54, 0.05);
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    border-radius: 8px;
+    color: var(--danger-color, #f44336);
+    font-size: 13px;
+}
+
 /* ====HELP STYLES (Современные карточки)====================== */
 .help-section {
     margin-bottom: 32px;
@@ -429,75 +528,4 @@ body {
 .help-version-changes li {
     padding: 3px 0;
     font-size: 14px;
-}
-
-/* ====CLOUD SYNC============================================= */
-.cloud-section {
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border-color, #eee);
-}
-
-.cloud-controls {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.cloud-status {
-    font-size: 14px;
-    margin-bottom: 16px;
-    color: var(--text-muted, #666);
-}
-
-.cloud-backups {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.cloud-backup-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    background: var(--bg-body, #f9f9f9);
-    border-radius: 8px;
-}
-
-.cloud-backup-name {
-    flex: 1;
-    font-weight: 500;
-    font-size: 13px;
-}
-
-.cloud-backup-date {
-    font-size: 12px;
-    color: var(--text-light, #999);
-}
-
-.btn-small {
-    padding: 4px 10px;
-    font-size: 12px;
-    border: 1px solid var(--border-color, #ddd);
-    border-radius: 4px;
-    background: var(--bg-card, #fff);
-    cursor: pointer;
-}
-
-.btn-small:hover {
-    background: var(--bg-hover, #f0f0f0);
-}
-
-.cloud-empty, .cloud-error {
-    text-align: center;
-    padding: 20px;
-    color: var(--text-light, #999);
-    font-size: 13px;
-}
-
-.cloud-error {
-    color: var(--danger-color, #f44336);
 }
