@@ -31,7 +31,7 @@ class ContentApp {
         this.urlWatcher.start();
         this.startDomObserver();
         this.addEventListeners();
-        this.setupBackgroundListener(); // <-- Слушаем фон
+        this.setupBackgroundListener();
     }
 
     private async refresh(): Promise<void> {
@@ -72,7 +72,14 @@ class ContentApp {
 
             const leadId = extractLeadIdFromElement(element);
             const status = this.resolver.resolve(clientName, leadId);
-            this.highlighter.apply(element, status, clientName);
+
+            // Ищем клиента в индексах, чтобы узнать его компанию и воронку
+            const client = this.resolver.getClient(leadId, clientName);
+            const otherDealsCount = client
+                ? this.resolver.getOtherDealsCount(client.companyName, client.directionAndFunnel)
+                : 0;
+
+            this.highlighter.apply(element, status, clientName, otherDealsCount);
         }
     }
 
@@ -102,7 +109,6 @@ class ContentApp {
             const elements = this.extractor.findElements();
             if (elements.length > 0) {
                 const firstEl = elements[0];
-                // Если у первого элемента нет нашего маркера, значит DOM перерисовался (например, модалка)
                 if (!firstEl.dataset.clientName) {
                     this.render();
                 }
@@ -145,8 +151,6 @@ class ContentApp {
             }
         });
     }
-
-    // ====BACKGROUND MESSAGES==================================
 
     private setupBackgroundListener(): void {
         chrome.runtime.onMessage.addListener((message) => {
@@ -193,11 +197,8 @@ class ContentApp {
     private async handleUrlChange(url: string): Promise<void> {
         const newPageType = this.detectPageByUrl(url);
 
-        // Если URL изменился (например, пагинация), но тип страницы тот же
-        // или тип страницы изменился (переход в карточку) - обновляем всё
         if (newPageType === this.pageType || newPageType !== null) {
             this.highlighter.clearAll();
-            // Небольшая задержка, чтобы DOM успел обновиться после смены URL
             setTimeout(async () => {
                 await this.refresh();
             }, 100);

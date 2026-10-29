@@ -3,89 +3,102 @@ import { STATUS_CONFIG } from '../shared/statuses';
 
 // ====HIGHLIGHTER=============================================
 
-/**
- * Применяет визуальный статус к элементам сделок.
- *
- * Отвечает только за:
- * - CSS-классы подсветки
- * - Бейдж статуса
- * - data-атрибуты
- *
- * Не знает про:
- * - Поиск элементов
- * - StorageService
- * - Обработку событий
- */
 export class Highlighter {
     private readonly BASE_CLASS = 'priority-client';
     private readonly BADGE_CLASS = 'priority-badge';
     private readonly BADGE_FIXED_CLASS = 'priority-badge-fixed';
+    private readonly COUNT_BADGE_CLASS = 'priority-deal-count';
+    private readonly BADGES_WRAPPER_CLASS = 'priority-badges-wrapper'; // <-- Новый класс
 
-    /**
-     * Применяет статус к элементу.
-     */
-    apply(element: HTMLElement, status: ClientStatus, clientName: string): void {
+    apply(
+        element: HTMLElement,
+        status: ClientStatus,
+        clientName: string,
+        otherDealsCount: number = 0
+    ): void {
         this.clear(element);
 
         const config = STATUS_CONFIG[status];
-
-        // Классы подсветки
         element.classList.add(this.BASE_CLASS, config.className);
 
-        // Бейдж
-        this.addBadge(element, status);
+        const isTextarea = element.tagName === 'TEXTAREA' || element.tagName === 'INPUT';
 
-        // Data-атрибуты
+        if (isTextarea) {
+            this.addFixedBadgeWithCount(element, status, otherDealsCount);
+        } else {
+            this.addInlineBadge(element, status);
+            if (otherDealsCount > 0) {
+                this.addInlineCountBadge(element, otherDealsCount);
+            }
+        }
+
         element.dataset.clientName = clientName;
         element.dataset.status = status;
     }
 
-    /**
-     * Снимает подсветку с элемента.
-     */
     clear(element: HTMLElement): void {
-        // Убираем все классы priority-*
         element.classList.forEach((cls) => {
             if (cls.startsWith('priority-')) {
                 element.classList.remove(cls);
             }
         });
 
-        // Убираем бейдж
-        this.removeBadge(element);
+        this.removeBadges(element);
 
-        // Убираем data-атрибуты
         delete element.dataset.clientName;
         delete element.dataset.status;
     }
 
-    /**
-     * Снимает подсветку со всех элементов на странице.
-     */
     clearAll(): void {
         document.querySelectorAll(`.${this.BASE_CLASS}`).forEach((el) => {
             this.clear(el as HTMLElement);
         });
 
-        // Убираем все бейджи, которые могли остаться
         document.querySelectorAll(`.${this.BADGE_CLASS}`).forEach((b) => b.remove());
         document.querySelectorAll(`.${this.BADGE_FIXED_CLASS}`).forEach((b) => b.remove());
+        document.querySelectorAll(`.${this.COUNT_BADGE_CLASS}`).forEach((b) => b.remove());
+        document.querySelectorAll(`.${this.BADGES_WRAPPER_CLASS}`).forEach((b) => b.remove());
     }
 
-    // ====BADGE================================================
+    // ====BADGES===============================================
 
-    private addBadge(element: HTMLElement, status: ClientStatus): void {
-        const isTextarea = element.tagName === 'TEXTAREA' || element.tagName === 'INPUT';
+    /**
+     * Рендер бейджей для textarea (карточка сделки).
+     * Оборачивает статус и цифру в единый контейнер, чтобы Flexbox не раскидывал их.
+     */
+    private addFixedBadgeWithCount(element: HTMLElement, status: ClientStatus, count: number): void {
+        const config = STATUS_CONFIG[status];
+        const parent = element.parentElement;
+        if (!parent) return;
 
-        if (isTextarea) {
-            this.addFixedBadge(element, status);
-        } else {
-            this.addInlineBadge(element, status);
+        // Создаем контейнер для бейджей
+        const wrapper = document.createElement('span');
+        wrapper.className = this.BADGES_WRAPPER_CLASS;
+
+        // 1. Бейдж статуса
+        const statusBadge = document.createElement('span');
+        statusBadge.className = `${this.BADGE_FIXED_CLASS} priority-badge-${this.getBadgeSuffix(status)}`;
+        statusBadge.textContent = `${config.icon} ${config.fullLabel}`;
+        if (this.isLightColor(status)) {
+            statusBadge.classList.add('priority-badge-light');
         }
+        wrapper.appendChild(statusBadge);
+
+        // 2. Бейдж количества (если есть)
+        if (count > 0) {
+            const countBadge = document.createElement('span');
+            countBadge.className = this.COUNT_BADGE_CLASS;
+            countBadge.textContent = String(count);
+            countBadge.title = `У этой компании есть ещё ${count} сделок(и) по другому продукту`;
+            wrapper.appendChild(countBadge);
+        }
+
+        // Вставляем общий контейнер после textarea
+        element.insertAdjacentElement('afterend', wrapper);
     }
 
     /**
-     * Бейдж внутрь ссылки.
+     * Рендер бейджа статуса для ссылок (список задач).
      */
     private addInlineBadge(element: HTMLElement, status: ClientStatus): void {
         const config = STATUS_CONFIG[status];
@@ -94,7 +107,6 @@ export class Highlighter {
         badge.className = `${this.BADGE_CLASS} priority-badge-${this.getBadgeSuffix(status)}`;
         badge.textContent = `${config.icon} ${config.fullLabel}`;
 
-        // Добавляем класс, если цвет светлый
         if (this.isLightColor(status)) {
             badge.classList.add('priority-badge-light');
         }
@@ -103,56 +115,40 @@ export class Highlighter {
     }
 
     /**
-     * Бейдж после textarea (нельзя вставить внутрь).
+     * Рендер бейджа количества для ссылок (вставляется внутрь ссылки).
      */
-    private addFixedBadge(element: HTMLElement, status: ClientStatus): void {
-        const config = STATUS_CONFIG[status];
-
-        const parent = element.parentElement;
-        if (!parent) return;
-
+    private addInlineCountBadge(element: HTMLElement, count: number): void {
         const badge = document.createElement('span');
-        badge.className = `${this.BADGE_FIXED_CLASS} priority-badge-${this.getBadgeSuffix(status)}`;
-        badge.textContent = `${config.icon} ${config.fullLabel}`;
-
-        // ВАЖНО: добавляем класс для светлых статусов, как в addInlineBadge
-        if (this.isLightColor(status)) {
-            badge.classList.add('priority-badge-light');
-        }
-
-        element.insertAdjacentElement('afterend', badge);
+        badge.className = this.COUNT_BADGE_CLASS;
+        badge.textContent = String(count);
+        badge.title = `У этой компании есть ещё ${count} сделок(и) по другому продукту`;
+        element.appendChild(badge);
     }
 
-    /**
-     * Удаляет бейдж, связанный с элементом.
-     */
-    private removeBadge(element: HTMLElement): void {
-        // Бейдж внутри ссылки
-        const inlineBadge = element.querySelector(`.${this.BADGE_CLASS}`);
-        if (inlineBadge) inlineBadge.remove();
+    private removeBadges(element: HTMLElement): void {
+        element.querySelector(`.${this.BADGE_CLASS}`)?.remove();
+        element.querySelector(`.${this.COUNT_BADGE_CLASS}`)?.remove();
 
-        // Бейдж после textarea
-        const nextSibling = element.nextElementSibling;
-        if (nextSibling?.classList.contains(this.BADGE_FIXED_CLASS)) {
-            nextSibling.remove();
+        // Удаляем контейнер с фиксированными бейджами (для textarea)
+        if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+            const next = element.nextElementSibling;
+            if (next && next.classList.contains(this.BADGES_WRAPPER_CLASS)) {
+                next.remove();
+            }
+            // На всякий случай чистим старые версии бейджей, если остались
+            if (next && (next.classList.contains(this.BADGE_FIXED_CLASS) || next.classList.contains(this.COUNT_BADGE_CLASS))) {
+                next.remove();
+            }
         }
     }
 
     // ====HELPERS==============================================
 
-    /**
-     * Возвращает суффикс для класса бейджа.
-     * Для всех холодных — 'cold'.
-     */
     private getBadgeSuffix(status: ClientStatus): string {
         const config = STATUS_CONFIG[status];
-        // Берём часть className после "priority-"
         return config.className.replace('priority-', '');
     }
 
-    /**
-     * Светлые цвета — для них нужен тёмный текст.
-     */
     private isLightColor(status: ClientStatus): boolean {
         return (
             status === 'warm' ||

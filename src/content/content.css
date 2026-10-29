@@ -180,7 +180,6 @@
     border-radius: 8px !important;
 }
 
-/* Убрали border, чтобы не было пунктирной рамки вокруг всего текста */
 .priority-cold-dealer {
     background-color: rgba(255, 152, 0, 0.15) !important;
     border-radius: 8px !important;
@@ -216,13 +215,28 @@
     font-weight: bold !important;
     margin-left: 8px !important;
     vertical-align: middle !important;
-    color: #fff !important; /* По умолчанию текст белый */
+    color: #fff !important;
+}
+
+/* Контейнер для бейджей в карточке сделки (textarea) */
+.priority-badges-wrapper {
+    display: flex !important;           /* Делаем флексом, чтобы бейджи стояли в ряд */
+    align-items: center !important;
+    gap: 6px !important;
+    width: fit-content !important;      /* Ширина по содержимому */
+    margin-left: auto !important;       /* ПРИЖИМАЕМ ВПРАВО */
+    margin-top: 8px !important;         /* Отступ сверху (как было раньше) */
+    margin-right: 16px !important;      /* Отступ справа (как было раньше) */
+    white-space: nowrap !important;
+}
+
+/* Стили для бейджа статуса внутри обертки */
+.priority-badges-wrapper .priority-badge-fixed {
+    margin: 0 !important;
+    display: inline-block !important;
 }
 
 .priority-badge-fixed {
-    display: block !important;
-    width: fit-content !important;
-    margin-left: auto !important;
     padding: 4px 8px !important;
     border-radius: 12px !important;
     font-size: 11px !important;
@@ -230,11 +244,8 @@
     color: #fff !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
     pointer-events: none !important;
-    margin-top: 8px !important;
-    margin-right: 16px !important;
 }
 
-/* Класс для светлых бейджей (текст темный) */
 .priority-badge-light {
     color: #333 !important;
 }
@@ -246,7 +257,6 @@
 .priority-badge-active { background-color: #9c27b0 !important; }
 .priority-badge-renewal { background-color: #009688 !important; }
 .priority-badge-cold { background-color: #ff9800 !important; }
-/* Бейдж для конкурента-дилера с пунктирной обводкой */
 .priority-badge-cold-dealer {
     background-color: #ff9800 !important;
     border: 1px dashed #fff !important;
@@ -258,28 +268,19 @@
 
 
 .quick-panel__button--current {
-    /* Убираем рамку, оставляем только заливку */
     border: 2px solid transparent !important;
-
-    /* Создаем градиент из трех цветов */
     background: linear-gradient(
             120deg,
-            rgba(33, 150, 243, 0.2),  /* Синий (полупрозрачный) */
-            rgba(156, 39, 176, 0.2),  /* Фиолетовый (полупрозрачный) */
-            rgba(33, 150, 243, 0.2)   /* Синий (полупрозрачный) */
+            rgba(33, 150, 243, 0.2),
+            rgba(156, 39, 176, 0.2),
+            rgba(33, 150, 243, 0.2)
     );
-
-    /* Делаем градиент в 3 раза шире кнопки, чтобы было куда двигаться */
     background-size: 300% 300%;
-
-    /* Запускаем анимацию перелива */
     animation: gradient-shift 3s ease infinite;
-
     font-weight: bold;
-    color: #333 !important; /* Текст остается черным */
+    color: #333 !important;
 }
 
-/* Анимация перелива */
 @keyframes gradient-shift {
     0% {
         background-position: 0% 50%;
@@ -295,5 +296,32 @@
 /* ====SIDEBAR IFRAME RESIZE HANDLE=========================== */
 #amocrm-sidebar-container:hover .sidebar-resize-handle,
 .sidebar-resize-handle:hover {
-    background-color: rgba(108, 92, 207, 0.1); /* Легкий фиолетовый оттенок */
+    background-color: rgba(108, 92, 207, 0.1);
+}
+
+/* ====DEAL COUNT BADGE======================================= */
+.priority-deal-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    padding: 0 4px !important;
+    background-color: #e0e0e0 !important;
+    color: #333 !important;
+    border-radius: 9px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    /* margin-left убран, так как теперь его контролирует .priority-badges-wrapper через gap */
+    vertical-align: middle !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+    border: 1px solid #ccc !important;
+    cursor: help;
+}
+
+/* Для темной темы */
+body.theme-dark .priority-deal-count {
+    background-color: #444 !important;
+    color: #e0e0e0 !important;
+    border-color: #666 !important;
 }
