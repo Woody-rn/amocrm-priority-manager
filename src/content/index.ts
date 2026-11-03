@@ -44,7 +44,12 @@ class ContentApp {
         this.diag.log('Initial refresh done');
         this.startDomObserver();
         this.startPageLoaderObserver();
-        this.startAmoTrace();
+
+        // Трассировка нужна только когда включена отладка
+        if (this.diag.isEnabled()) {
+            this.startAmoTrace();
+        }
+
         this.addEventListeners();
         this.setupBackgroundListener();
         this.diag.log('INIT complete');
@@ -183,10 +188,6 @@ class ContentApp {
 
     // ====OBSERVERS============================================
 
-    /**
-     * Наблюдает за спиннером #page_change_progress.
-     * Когда он исчезает (класс "stopped") — загрузка закончилась, вызываем refresh().
-     */
     private startPageLoaderObserver(): void {
         if (this.pageLoaderObserver) this.pageLoaderObserver.disconnect();
 
@@ -203,11 +204,9 @@ class ContentApp {
             const isStopped = loader.classList.contains('stopped');
 
             if (!isStopped) {
-                // Загрузка началась
                 this.wasLoading = true;
                 this.diag.log('PAGE_LOADER: loading started');
 
-                // Отменяем отложенный refresh, если он был
                 if (this.loaderDebounceTimer) {
                     clearTimeout(this.loaderDebounceTimer);
                     this.loaderDebounceTimer = null;
@@ -215,16 +214,13 @@ class ContentApp {
                 return;
             }
 
-            // Загрузка завершилась
             if (!this.wasLoading) {
-                // Спиннер был "stopped" изначально, не реагируем
                 return;
             }
 
             this.wasLoading = false;
             this.diag.log('PAGE_LOADER: loading finished, scheduling refresh');
 
-            // Небольшая задержка, чтобы amoCRM успела отрисовать все строки
             if (this.loaderDebounceTimer) clearTimeout(this.loaderDebounceTimer);
             this.loaderDebounceTimer = setTimeout(() => {
                 this.loaderDebounceTimer = null;
@@ -379,10 +375,8 @@ class ContentApp {
         this.traceStartTime = Date.now();
         this.diag.trace('URL changed, trace timer reset', { url });
 
-        // Даём спиннеру шанс появиться (он может появиться чуть позже)
-        // и даём amoCRM время начать загрузку
         setTimeout(() => {
-            if (this.loaderDebounceTimer) return; // Уже запланирован refresh
+            if (this.loaderDebounceTimer) return;
             this.diag.log('URL_CHANGE: no spinner activity, forcing refresh');
             void this.refresh();
         }, 1000);

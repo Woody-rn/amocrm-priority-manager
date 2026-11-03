@@ -39,8 +39,6 @@
         "sidebar/sidebar.html",
         "sidebar/sidebar.css",
         "sidebar/index.js",
-        "sidebar/render.js",
-        "sidebar/filters.js",
         "shared/styles/common.css",
         "shared/styles/theme.css"
       ],

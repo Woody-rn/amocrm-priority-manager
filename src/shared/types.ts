@@ -44,12 +44,6 @@ export interface Client {
     updatedAt: string;
 }
 
-// ====ХРАНИЛИЩЕ==============================================
-
-export interface StorageData {
-    clients: Client[];
-}
-
 // ====CHANGELOG==============================================
 
 export interface ChangelogCache {
@@ -66,13 +60,4 @@ export interface ChangelogVersion {
 
 export interface ChangelogData {
     versions: ChangelogVersion[];
-}
-
-// ====СООБЩЕНИЯ==============================================
-
-export type MessageAction = 'openSidebar' | 'sidebarStateChanged';
-
-export interface RuntimeMessage {
-    action: MessageAction;
-    [key: string]: unknown;
 }

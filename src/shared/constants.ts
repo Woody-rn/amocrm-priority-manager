@@ -35,18 +35,10 @@ export const STORAGE_KEYS = {
 
 // ====SIDEBAR HANDLE (ручка "Панель")========================
 
-export const HANDLE_DEFAULT_POSITION = 200;
-export const HANDLE_MIN_TOP = 10;
-
 export const SIDEBAR_DEFAULT_WIDTH = 400;
 export const SIDEBAR_MIN_WIDTH = 320;
 export const SIDEBAR_MAX_WIDTH = 800;
 
 // ====UI======================================================
 
-export const NOTIFICATION_DURATION = 2000;
 export const PANEL_HIDE_DELAY = 100;
-
-// ====CHANGELOG===============================================
-
-export const CHANGELOG_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 часа

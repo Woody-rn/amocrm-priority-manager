@@ -1,6 +1,6 @@
 {
   "name": "amocrm-priority-manager",
-  "version": "1.9.0",
+  "version": "2.1.0",
   "description": "Расширение для Яндекс Браузера для работы с клиентами в amoCRM",
   "private": true,
   "scripts": {
