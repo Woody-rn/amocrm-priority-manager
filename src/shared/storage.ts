@@ -127,15 +127,23 @@ export class StorageService {
             const existing = clientsByLeadId.get(incoming.leadId);
 
             if (existing) {
-                // Обновляем только метаданные, не трогая status, id, createdAt и leadUrl
-                existing.name = incoming.name || existing.name;
-                existing.companyName = incoming.companyName || existing.companyName;
-                existing.directionAndFunnel = incoming.directionAndFunnel || existing.directionAndFunnel;
-                existing.companyINN = incoming.companyINN || existing.companyINN;
-                existing.updatedAt = new Date().toISOString();
-                updatedCount++;
+                // Проверяем, реально ли изменились данные
+                const hasChanges =
+                    (incoming.name && incoming.name !== existing.name) ||
+                    (incoming.companyName && incoming.companyName !== existing.companyName) ||
+                    (incoming.directionAndFunnel && incoming.directionAndFunnel !== existing.directionAndFunnel) ||
+                    (incoming.companyINN && incoming.companyINN !== existing.companyINN);
+
+                if (hasChanges) {
+                    existing.name = incoming.name || existing.name;
+                    existing.companyName = incoming.companyName || existing.companyName;
+                    existing.directionAndFunnel = incoming.directionAndFunnel || existing.directionAndFunnel;
+                    existing.companyINN = incoming.companyINN || existing.companyINN;
+                    existing.updatedAt = new Date().toISOString();
+                    updatedCount++;
+                }
+                // Если изменений нет — НЕ трогаем updatedAt
             } else {
-                // Добавляем нового
                 existingClients.push(incoming);
                 clientsByLeadId.set(incoming.leadId, incoming);
                 addedCount++;
