@@ -51,6 +51,19 @@
                     </select>
                 </div>
 
+                <div class="options-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="diagnosticsEnabled">
+                        <span>Включить отладку (логирование в фоне)</span>
+                    </label>
+                    <small>Логи будут копиться в расширении. Используй при багах и присылай разработчику.</small>
+                </div>
+
+                <div class="options-actions" style="margin-bottom: 24px;">
+                    <button id="downloadDiagLogBtn" class="btn">📥 Скачать лог</button>
+                    <button id="clearDiagLogBtn" class="btn btn-danger">🗑 Очистить лог</button>
+                </div>
+
                 <button id="saveSettingsBtn" class="btn btn-primary">Сохранить настройки</button>
 
                 <hr style="margin: 32px 0; border: none; border-top: 1px solid var(--border-color, #eee);">

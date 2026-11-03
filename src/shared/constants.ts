@@ -29,12 +29,15 @@ export const STORAGE_KEYS = {
     settings: 'settings',
     sidebarCollapsedState: 'sidebarCollapsedState',
     sidebarWidth: 'sidebarWidth',
+    diagnosticsEnabled: 'diagnosticsEnabled',
+    diagnosticsLog: 'diagnosticsLog'
 } as const;
 
 // ====SIDEBAR HANDLE (ручка "Панель")========================
 
 export const HANDLE_DEFAULT_POSITION = 200;
 export const HANDLE_MIN_TOP = 10;
+
 export const SIDEBAR_DEFAULT_WIDTH = 400;
 export const SIDEBAR_MIN_WIDTH = 320;
 export const SIDEBAR_MAX_WIDTH = 800;

@@ -1,30 +1,30 @@
-// Открытие боковой панели по клику на иконку (опционально)
-chrome.sidePanel
-    .setPanelBehavior({ openPanelOnActionClick: false })
-    .catch((error) => console.error(error));
+import { DiagnosticsService } from './shared/diagnostics';
 
-// Слушаем сообщения от popup и content
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'openSidebar') {
-        if (sender.tab) {
-            chrome.sidePanel.open({ tabId: sender.tab.id })
-                .then(() => sendResponse({ success: true }))
-                .catch((error) => {
-                    console.error('Ошибка открытия панели:', error);
-                    sendResponse({ success: false, error: error.message });
-                });
-        } else {
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                if (tabs[0]) {
-                    chrome.sidePanel.open({ tabId: tabs[0].id })
-                        .then(() => sendResponse({ success: true }))
-                        .catch((error) => {
-                            console.error('Ошибка открытия панели:', error);
-                            sendResponse({ success: false, error: error.message });
-                        });
-                }
-            });
-        }
+const diag = new DiagnosticsService('background');
+
+// ====MESSAGES===============================================
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message.action === 'openHelp') {
+        void chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html#features') });
+        sendResponse({ success: true });
         return true;
     }
+    return false;
+});
+
+// ====WEB NAVIGATION=========================================
+
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+    if (details.frameId !== 0) return;
+    if (!details.url.includes('amocrm.ru')) return;
+
+    diag.log('URL changed', { url: details.url, tabId: details.tabId });
+
+    chrome.tabs.sendMessage(details.tabId, {
+        action: 'urlChanged',
+        url: details.url
+    }).catch((e) => {
+        diag.warn('Failed to send urlChanged (content script not ready?)', String(e));
+    });
 });

@@ -7,16 +7,17 @@ import type { Client, ChangelogData } from '../shared/types';
 import { renderFeatures } from './components/render-features';
 import { renderHistory } from './components/render-history';
 import { YandexDiskStorage } from '../shared/cloud/YandexDiskStorage';
-
-// ====OPTIONS APP============================================
+import { DiagnosticsService } from '../shared/diagnostics';
 
 class OptionsApp {
     private storage = new StorageService();
     private settingsService = new SettingsService();
     private cloudStorage = new YandexDiskStorage();
     private chart: Chart | null = null;
+    private diag = new DiagnosticsService('options');
 
     async init(): Promise<void> {
+        this.diag.log('Options init started');
         await applyTheme();
         this.renderVersion();
         await this.loadSettings();
@@ -26,6 +27,7 @@ class OptionsApp {
         await this.renderChart();
         await this.renderFeaturesAndHistory();
         await this.setupCloud();
+        this.diag.log('Options init complete');
     }
 
     private renderVersion(): void {
@@ -44,11 +46,17 @@ class OptionsApp {
 
     private async loadSettings(): Promise<void> {
         const settings = await this.settingsService.getSettings();
+
         const baseUrlInput = document.getElementById('baseUrlInput') as HTMLInputElement;
         if (baseUrlInput) baseUrlInput.value = settings.baseUrl || window.location.origin;
 
         const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
         if (themeSelect) themeSelect.value = settings.theme;
+
+        const diagCheckbox = document.getElementById('diagnosticsEnabled') as HTMLInputElement;
+        if (diagCheckbox) diagCheckbox.checked = settings.diagnosticsEnabled;
+
+        this.diag.setEnabled(settings.diagnosticsEnabled);
     }
 
     private setupTabs(): void {
@@ -150,11 +158,15 @@ class OptionsApp {
     private async saveSettings(): Promise<void> {
         const baseUrlInput = document.getElementById('baseUrlInput') as HTMLInputElement;
         const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+        const diagCheckbox = document.getElementById('diagnosticsEnabled') as HTMLInputElement;
 
         await this.settingsService.saveSettings({
             baseUrl: baseUrlInput.value.trim(),
-            theme: themeSelect.value as Theme
+            theme: themeSelect.value as Theme,
+            diagnosticsEnabled: diagCheckbox.checked
         });
+
+        this.diag.setEnabled(diagCheckbox.checked);
 
         await applyTheme();
     }
@@ -169,7 +181,6 @@ class OptionsApp {
 
         if (!connectBtn || !uploadBtn || !statusEl || !backupsEl) return;
 
-        // Функция отрисовки списка
         const renderBackups = async () => {
             try {
                 backupsEl.innerHTML = '<div class="cloud-loading">⏳ Загрузка списка...</div>';
@@ -196,12 +207,11 @@ class OptionsApp {
                     });
                 });
             } catch (e) {
-                console.error(e);
+                this.diag.error('Cloud render backups failed', e);
                 backupsEl.innerHTML = '<div class="cloud-error">⚠️ Ошибка загрузки списка бэкапов. Проверьте подключение.</div>';
             }
         };
 
-        // Функция обновления статуса и кнопок
         const updateUI = async () => {
             const connected = await this.cloudStorage.isConnected();
 
@@ -213,30 +223,26 @@ class OptionsApp {
                 statusEl.textContent = '⚪ Не подключено';
                 statusEl.style.color = 'var(--text-muted, #666)';
                 uploadBtn.disabled = true;
-                // Если не подключено — сразу показываем заглушку
                 backupsEl.innerHTML = '<div class="cloud-empty">Подключитесь к Яндекс.Диску, чтобы увидеть бэкапы.</div>';
-                return; // Прерываем, чтобы не пытаться загрузить список
+                return;
             }
 
             await renderBackups();
         };
 
-        // Обработчик кнопки "Подключить"
         connectBtn.addEventListener('click', async () => {
             try {
                 statusEl.textContent = '⏳ Подключение...';
                 await this.cloudStorage.connect();
                 await updateUI();
             } catch (e) {
-                console.error(e);
+                this.diag.error('Cloud connect failed', e);
                 statusEl.textContent = '🔴 Ошибка авторизации';
                 statusEl.style.color = 'var(--danger-color, #f44336)';
-                // Показываем ошибку в списке
                 backupsEl.innerHTML = '<div class="cloud-error">⚠️ Не удалось авторизоваться. Проверьте настройки приложения в Яндекс OAuth.</div>';
             }
         });
 
-        // Обработчик кнопки "Сохранить в облако"
         uploadBtn.addEventListener('click', async () => {
             try {
                 uploadBtn.disabled = true;
@@ -248,7 +254,7 @@ class OptionsApp {
                 await renderBackups();
                 alert('Бэкап сохранен в Яндекс.Диск!');
             } catch (e) {
-                console.error(e);
+                this.diag.error('Cloud upload failed', e);
                 alert('Ошибка сохранения: ' + (e as Error).message);
             } finally {
                 uploadBtn.disabled = false;
@@ -256,7 +262,6 @@ class OptionsApp {
             }
         });
 
-        // Инициализация при загрузке страницы
         await updateUI();
     }
 
@@ -272,7 +277,7 @@ class OptionsApp {
             await this.renderChart();
             alert(`База восстановлена! Записей: ${imported.length}`);
         } catch (e) {
-            console.error(e);
+            this.diag.error('Cloud restore failed', e);
             alert('Ошибка восстановления: ' + (e as Error).message);
         }
     }
@@ -313,7 +318,7 @@ class OptionsApp {
             await this.renderChart();
             alert(`Импортировано: ${imported.length} клиентов`);
         } catch (error) {
-            console.error('[Options] Ошибка импорта:', error);
+            this.diag.error('Import failed', error);
             alert('Ошибка импорта');
         } finally {
             input.value = '';
@@ -334,6 +339,35 @@ class OptionsApp {
         alert(`Удалено: ${clients.length} клиентов`);
     }
 
+    // ====DIAGNOSTICS==========================================
+
+    private async downloadDiagLog(): Promise<void> {
+        const log = await DiagnosticsService.getLog();
+        if (log.length === 0) {
+            alert('Лог пуст');
+            return;
+        }
+
+        const text = log.map(entry =>
+            `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.source}] ${entry.message}` +
+            (entry.data ? `\n  DATA: ${JSON.stringify(entry.data, null, 2)}` : '')
+        ).join('\n');
+
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `amo-priority-manager-log-${new Date().toISOString().split('T')[0]}.txt`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+
+    private async clearDiagLog(): Promise<void> {
+        if (!confirm('Очистить диагностический лог?')) return;
+        await DiagnosticsService.clearLog();
+        alert('Лог очищен');
+    }
+
     private addEventListeners(): void {
         document.getElementById('saveSettingsBtn')?.addEventListener('click', () => void this.saveSettings());
 
@@ -347,10 +381,15 @@ class OptionsApp {
         });
         document.getElementById('importFile')?.addEventListener('change', (e) => void this.handleImport(e));
         document.getElementById('clearAllBtn')?.addEventListener('click', () => void this.handleClearAll());
+
+        document.getElementById('downloadDiagLogBtn')?.addEventListener('click', () => {
+            void this.downloadDiagLog();
+        });
+        document.getElementById('clearDiagLogBtn')?.addEventListener('click', () => {
+            void this.clearDiagLog();
+        });
     }
 }
-
-// ====BOOTSTRAP===============================================
 
 document.addEventListener('DOMContentLoaded', () => {
     const app = new OptionsApp();

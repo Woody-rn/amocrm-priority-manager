@@ -2,30 +2,43 @@
 
 /**
  * Следит за изменениями URL (SPA-переходы в amoCRM).
+ * Перехватывает pushState, replaceState и popstate.
  */
 export class UrlWatcher {
     private lastUrl = location.href;
-    private observer: MutationObserver | null = null;
+    private originalPushState: typeof history.pushState;
+    private originalReplaceState: typeof history.replaceState;
 
-    constructor(private onChange: (url: string) => void) {}
+    constructor(private onChange: (url: string) => void) {
+        this.originalPushState = history.pushState;
+        this.originalReplaceState = history.replaceState;
+    }
 
     start(): void {
-        this.observer = new MutationObserver(() => {
+        const handleUrlChange = () => {
             const currentUrl = location.href;
             if (currentUrl !== this.lastUrl) {
                 this.lastUrl = currentUrl;
                 this.onChange(currentUrl);
             }
-        });
+        };
 
-        this.observer.observe(document, {
-            subtree: true,
-            childList: true
-        });
+        history.pushState = (...args) => {
+            this.originalPushState.apply(history, args);
+            handleUrlChange();
+        };
+
+        history.replaceState = (...args) => {
+            this.originalReplaceState.apply(history, args);
+            handleUrlChange();
+        };
+
+        window.addEventListener('popstate', handleUrlChange);
     }
 
     stop(): void {
-        this.observer?.disconnect();
-        this.observer = null;
+        history.pushState = this.originalPushState;
+        history.replaceState = this.originalReplaceState;
+        window.removeEventListener('popstate', () => {});
     }
 }
