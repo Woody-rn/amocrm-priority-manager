@@ -1,5 +1,4 @@
 import { STATUS_CONFIG, STATUS_ORDER, GROUP_LABELS, GROUP_ORDER } from '../../shared/statuses';
-import { SELECTORS } from '../../shared/constants';
 
 const t = (key: string) => chrome.i18n.getMessage(key);
 
@@ -63,7 +62,7 @@ export function renderFeatures(container: HTMLElement): void {
     `;
     container.appendChild(instructionsSection);
 
-    // 3. ЛОГИКА СИНХРОНИЗАЦИИ
+    // 3. ЛОГИКА СИНХРОНИЗАЦИИ (для пользователя)
     const logicSection = document.createElement('section');
     logicSection.className = 'help-section';
 
@@ -87,59 +86,4 @@ export function renderFeatures(container: HTMLElement): void {
         </div>
     `;
     container.appendChild(logicSection);
-
-    // 4. ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ
-    const techSection = document.createElement('section');
-    techSection.className = 'help-section';
-
-    let selectorsHtml = '';
-    Object.entries(SELECTORS).forEach(([page, selector]) => {
-        let pageName = '';
-        let description = '';
-
-        if (page === 'todo') {
-            pageName = t('helpTechTodo');
-            description = t('helpTechTodoDesc');
-        } else if (page === 'leadsList') {
-            pageName = t('helpTechLeadsList');
-            description = t('helpTechTodoDesc');
-        } else if (page === 'leadsDetail') {
-            pageName = t('helpTechDetail');
-            description = t('helpTechDetailDesc');
-        }
-
-        selectorsHtml += `
-            <div class="help-tech-item">
-                <div class="help-tech-header">${pageName}</div>
-                <code class="help-tech-code">${selector}</code>
-                <div class="help-tech-desc">${description}</div>
-            </div>
-        `;
-    });
-
-    techSection.innerHTML = `
-        <h2>🛠 ${t('helpTechTitle')}</h2>
-        <p class="help-tech-intro">${t('helpTechIntro')}</p>
-        <div class="help-tech-list">
-            ${selectorsHtml}
-        </div>
-        <div class="help-tech-note" style="margin-bottom: 24px;">
-            <strong>${t('helpTechLeadId')}</strong>
-        </div>
-
-        <!-- ОБНОВЛЕННЫЙ БЛОК: МЕХАНИЗМ ОБНОВЛЕНИЯ -->
-        <h3 style="margin-top: 24px; margin-bottom: 12px;">${t('helpTechSyncTitle')}</h3>
-        <p class="help-tech-intro">${t('helpTechSyncDesc')}</p>
-        
-        <div class="help-tech-item" style="border-left-color: var(--primary-color, #2196f3);">
-            <div class="help-tech-desc" style="font-size: 14px; line-height: 1.6;">
-                ${t('helpTechSyncList')}
-            </div>
-        </div>
-        
-        <div class="help-tech-note" style="margin-top: 16px; background: rgba(255, 152, 0, 0.1); border-left: 3px solid #ff9800; padding: 12px 16px;">
-            ${t('helpTechSyncDebounce')}
-        </div>
-    `;
-    container.appendChild(techSection);
 }

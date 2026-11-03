@@ -80,5 +80,92 @@
   },
   "helpTechSyncDebounce": {
     "message": "<strong>Задержка:</strong> После смены URL расширение ждет 100 мс, чтобы amoCRM успела отрисовать новые строки в DOM, и только потом запускает сбор данных."
+  },
+  "integrationPagesTitle": {
+    "message": "Карта страниц"
+  },
+  "integrationPagesIntro": {
+    "message": "Расширение работает на трёх типах страниц amoCRM. Для каждого указан триггер, селектор и что мы парсим."
+  },
+  "integrationPageTodo": {
+    "message": "/todo — Список задач (главная страница)"
+  },
+  "integrationPageTodoDesc": {
+    "message": "Триггеры: спиннер #page_change_progress (класс stopped), MutationObserver на #list_table, fallback через chrome.webNavigation (1 сек)."
+  },
+  "integrationPageDetail": {
+    "message": "/leads/detail — Карточка сделки"
+  },
+  "integrationPageDetailDesc": {
+    "message": "Триггер: появление textarea#person_n. Рендер бейджей без сбора."
+  },
+  "integrationPageLeadsList": {
+    "message": "/leads/list/* — Список сделок"
+  },
+  "integrationPageLeadsListDesc": {
+    "message": "Только рендер бейджей, без автосбора."
+  },
+  "integrationLifecycleTitle": {
+    "message": "Жизненный цикл обновления"
+  },
+  "integrationStep1": {
+    "message": "Пользователь кликает «Задачи» → amoCRM меняет URL через pushState."
+  },
+  "integrationStep2": {
+    "message": "chrome.webNavigation ловит смену URL и отправляет urlChanged в content script."
+  },
+  "integrationStep3": {
+    "message": "Content script ждёт исчезновения спиннера #page_change_progress (класс stopped) или 1 сек."
+  },
+  "integrationStep4": {
+    "message": "Вызывается refresh(): collectNewClients() собирает видимые строки, buildClientIndexes() перестраивает индексы, render() вешает бейджи."
+  },
+  "integrationStep5": {
+    "message": "MutationObserver на #list_table страхует, если что-то пропустили."
+  },
+  "integrationFailuresTitle": {
+    "message": "Точки отказа"
+  },
+  "integrationFailSpinner": {
+    "message": "Спиннер #page_change_progress"
+  },
+  "integrationFailSpinnerDesc": {
+    "message": "Если amoCRM переименует ID спиннера — перестанет работать основной триггер. Фикс: обновить ID в content/index.ts (startPageLoaderObserver)."
+  },
+  "integrationFailSelectors": {
+    "message": "Селекторы сделок"
+  },
+  "integrationFailSelectorsDesc": {
+    "message": "Если amoCRM изменит класс ссылок (a.js-navigate-link) — перестанет собирать сделки. Фикс: обновить SELECTORS в shared/constants.ts."
+  },
+  "integrationFailContainer": {
+    "message": "Контейнер #list_table"
+  },
+  "integrationFailContainerDesc": {
+    "message": "Если amoCRM переименует контейнер списка — MutationObserver не сработает. Фикс: обновить селектор в startDomObserver (content/index.ts)."
+  },
+  "integrationFailTitle": {
+    "message": "Атрибут title у textarea"
+  },
+  "integrationFailTitleDesc": {
+    "message": "Если amoCRM перестанет писать название в title или value — не сможет парсить имя. Фикс: обновить extractNameFromElement в shared/utils/parsers.ts."
+  },
+  "integrationDiagTitle": {
+    "message": "Диагностика"
+  },
+  "integrationDiagDesc": {
+    "message": "Включите отладку в настройках → логи пишутся в chrome.storage.local (буфер 500 записей). Скачать лог → кнопка «Скачать лог». В логе видно: RENDER (сколько элементов нашли), COLLECT (сколько собрали), STABILIZATION (сколько ждали), PAGE_LOADER (когда сработал спиннер)."
+  },
+  "integrationSelectorTodoDesc": {
+    "message": "Ищет только ссылки на сделки внутри списка задач (класс js-navigate-link и href с /leads/detail/)."
+  },
+  "integrationSelectorDetailDesc": {
+    "message": "Ищет поле с названием сделки (textarea#person_n). ID извлекается из тега span.tag."
+  },
+  "integrationLeadIdNote": {
+    "message": "ID сделки извлекается из атрибута href (число после /leads/detail/) или из тега span.tag на странице сделки."
+  },
+  "integrationLifecycleIntro": {
+    "message": "Расширение использует комбинацию фоновых и контентных скриптов для отслеживания изменений:"
   }
 }

@@ -80,5 +80,92 @@
   },
   "helpTechSyncDebounce": {
     "message": "<strong>Delay:</strong> After a URL change, the extension waits 100ms to let amoCRM render new rows in the DOM, and only then starts collecting data."
+  },
+  "integrationPagesTitle": {
+    "message": "Page map"
+  },
+  "integrationPagesIntro": {
+    "message": "The extension works on three types of amoCRM pages. For each: trigger, selector, and what we parse."
+  },
+  "integrationPageTodo": {
+    "message": "/todo — Task list (main page)"
+  },
+  "integrationPageTodoDesc": {
+    "message": "Triggers: spinner #page_change_progress (class stopped), MutationObserver on #list_table, fallback via chrome.webNavigation (1 sec)."
+  },
+  "integrationPageDetail": {
+    "message": "/leads/detail — Deal card"
+  },
+  "integrationPageDetailDesc": {
+    "message": "Trigger: appearance of textarea#person_n. Badge rendering only, no collection."
+  },
+  "integrationPageLeadsList": {
+    "message": "/leads/list/* — Deal list"
+  },
+  "integrationPageLeadsListDesc": {
+    "message": "Badge rendering only, no auto-collection."
+  },
+  "integrationLifecycleTitle": {
+    "message": "Update lifecycle"
+  },
+  "integrationStep1": {
+    "message": "User clicks 'Tasks' → amoCRM changes URL via pushState."
+  },
+  "integrationStep2": {
+    "message": "chrome.webNavigation catches URL change and sends urlChanged to content script."
+  },
+  "integrationStep3": {
+    "message": "Content script waits for spinner #page_change_progress (class stopped) to disappear or 1 sec."
+  },
+  "integrationStep4": {
+    "message": "refresh() is called: collectNewClients() collects visible rows, buildClientIndexes() rebuilds indexes, render() applies badges."
+  },
+  "integrationStep5": {
+    "message": "MutationObserver on #list_table serves as fallback if something was missed."
+  },
+  "integrationFailuresTitle": {
+    "message": "Failure points"
+  },
+  "integrationFailSpinner": {
+    "message": "Spinner #page_change_progress"
+  },
+  "integrationFailSpinnerDesc": {
+    "message": "If amoCRM renames the spinner ID, the main trigger stops working. Fix: update ID in content/index.ts (startPageLoaderObserver)."
+  },
+  "integrationFailSelectors": {
+    "message": "Deal selectors"
+  },
+  "integrationFailSelectorsDesc": {
+    "message": "If amoCRM changes link class (a.js-navigate-link), deal collection stops. Fix: update SELECTORS in shared/constants.ts."
+  },
+  "integrationFailContainer": {
+    "message": "Container #list_table"
+  },
+  "integrationFailContainerDesc": {
+    "message": "If amoCRM renames the list container, MutationObserver won't fire. Fix: update selector in startDomObserver (content/index.ts)."
+  },
+  "integrationFailTitle": {
+    "message": "Title attribute on textarea"
+  },
+  "integrationFailTitleDesc": {
+    "message": "If amoCRM stops writing name to title or value, name parsing breaks. Fix: update extractNameFromElement in shared/utils/parsers.ts."
+  },
+  "integrationDiagTitle": {
+    "message": "Diagnostics"
+  },
+  "integrationDiagDesc": {
+    "message": "Enable diagnostics in settings → logs are stored in chrome.storage.local (500 entries buffer). Download log → click 'Download log'. In the log you can see: RENDER (how many elements found), COLLECT (how many collected), STABILIZATION (how long waited), PAGE_LOADER (when spinner fired)."
+  },
+  "integrationSelectorTodoDesc": {
+    "message": "Searches only for deal links within the task list (class js-navigate-link and href with /leads/detail/)."
+  },
+  "integrationSelectorDetailDesc": {
+    "message": "Searches for the deal name field (textarea#person_n). ID is extracted from the span.tag."
+  },
+  "integrationLeadIdNote": {
+    "message": "The deal ID is extracted from the href attribute (the number after /leads/detail/) or from the span.tag on the deal page."
+  },
+  "integrationLifecycleIntro": {
+    "message": "The extension uses a combination of background and content scripts to track changes:"
   }
 }

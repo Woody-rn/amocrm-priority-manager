@@ -5,6 +5,7 @@ import { STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
 import { applyTheme } from '../shared/utils/theme';
 import type { Client, ChangelogData } from '../shared/types';
 import { renderFeatures } from './components/render-features';
+import { renderIntegration } from './components/render-integration';
 import { renderHistory } from './components/render-history';
 import { YandexDiskStorage } from '../shared/cloud/YandexDiskStorage';
 import { DiagnosticsService } from '../shared/diagnostics';
@@ -25,7 +26,8 @@ class OptionsApp {
         this.checkHash();
         this.addEventListeners();
         await this.renderChart();
-        await this.renderFeaturesAndHistory();
+        this.renderFeaturesAndHistory();
+        this.renderIntegrationTab();
         await this.setupCloud();
         this.diag.log('Options init complete');
     }
@@ -135,7 +137,7 @@ class OptionsApp {
         });
     }
 
-    private async renderFeaturesAndHistory(): Promise<void> {
+    private renderFeaturesAndHistory(): void {
         const featuresContainer = document.getElementById('featuresContainer');
         if (featuresContainer) {
             renderFeatures(featuresContainer);
@@ -143,15 +145,31 @@ class OptionsApp {
 
         const historyContainer = document.getElementById('historyContainer');
         if (historyContainer) {
-            try {
-                const url = chrome.runtime.getURL('changelog.json');
-                const response = await fetch(url);
-                const changelog = await response.json() as ChangelogData;
-                renderHistory(historyContainer, changelog);
-            } catch (e) {
-                console.error('Ошибка загрузки changelog:', e);
-                historyContainer.innerHTML = '<p>Не удалось загрузить историю версий.</p>';
-            }
+            void this.loadChangelog().then((changelog) => {
+                if (changelog) {
+                    renderHistory(historyContainer, changelog);
+                } else {
+                    historyContainer.innerHTML = '<p>Не удалось загрузить историю версий.</p>';
+                }
+            });
+        }
+    }
+
+    private async loadChangelog(): Promise<ChangelogData | null> {
+        try {
+            const url = chrome.runtime.getURL('changelog.json');
+            const response = await fetch(url);
+            return await response.json() as ChangelogData;
+        } catch (e) {
+            console.error('Ошибка загрузки changelog:', e);
+            return null;
+        }
+    }
+
+    private renderIntegrationTab(): void {
+        const container = document.getElementById('integrationContainer');
+        if (container) {
+            renderIntegration(container);
         }
     }
 
