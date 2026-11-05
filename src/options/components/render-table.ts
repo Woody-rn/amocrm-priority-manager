@@ -15,18 +15,7 @@ const COLUMNS: TableColumn[] = [
         key: 'leadUrl',
         label: 'Ссылка',
         visible: true,
-        sortable: false,
-        formatter: (c) => {
-            if (!c.leadUrl) return '—';
-            const a = document.createElement('a');
-            // baseUrl подставляется ниже (через замыкание)
-            a.href = c.leadUrl;
-            a.target = '_blank';
-            a.textContent = '🔗 Открыть';
-            a.style.color = 'var(--primary-color, #2196f3)';
-            a.style.textDecoration = 'none';
-            return a;
-        }
+        sortable: false
     },
     { key: 'parserCompanyName', label: 'Компания', visible: true, sortable: true },
     { key: 'originalCompanyName', label: 'Компания (ориг.)', visible: false, sortable: true },
@@ -191,12 +180,17 @@ export function renderTable(container: HTMLElement): void {
             const row = document.createElement('tr');
             visibleCols.forEach((col) => {
                 const td = document.createElement('td');
+
                 if (col.key === 'leadUrl' && client.leadUrl) {
-                    // Специальная обработка для ссылки — подставляем baseUrl
                     const a = document.createElement('a');
-                    a.href = client.leadUrl.startsWith('http')
-                        ? client.leadUrl
-                        : `${baseUrl}${client.leadUrl}`;
+                    // Безопасная склейка baseUrl и leadUrl
+                    if (client.leadUrl.startsWith('http')) {
+                        a.href = client.leadUrl;
+                    } else {
+                        const cleanBase = baseUrl.replace(/\/+$/, '');
+                        const cleanPath = client.leadUrl.replace(/^\/+/, '');
+                        a.href = `${cleanBase}/${cleanPath}`;
+                    }
                     a.target = '_blank';
                     a.textContent = '🔗 Открыть';
                     a.style.color = 'var(--primary-color, #2196f3)';

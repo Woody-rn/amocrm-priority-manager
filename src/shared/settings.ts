@@ -31,6 +31,12 @@ export class SettingsService {
     async saveSettings(patch: Partial<AppSettings>): Promise<void> {
         const current = await this.getSettings();
         const updated = { ...current, ...patch };
+
+        // Нормализуем baseUrl: убираем все слэши на конце
+        if (updated.baseUrl) {
+            updated.baseUrl = updated.baseUrl.replace(/\/+$/, '');
+        }
+
         await this.storage.set({ [STORAGE_KEYS.settings]: updated });
 
         // Синхронизируем флаг отладки для DiagnosticsService
