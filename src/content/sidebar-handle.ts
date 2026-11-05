@@ -1,4 +1,4 @@
-import {SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } from '../shared/constants';
+import { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } from '../shared/constants';
 
 // ====SIDEBAR HANDLE=========================================
 
@@ -135,7 +135,8 @@ export class SidebarHandle {
             cursor: 'ew-resize',
             zIndex: '10'
         });
-        resizeHandle.addEventListener('mousedown', (e) => this.startResize(e, container));
+        // Используем pointerdown (для корректного захвата)
+        resizeHandle.addEventListener('pointerdown', (e) => this.startResize(e, container));
 
         // 3. Создаем iframe
         const iframe = document.createElement('iframe');
@@ -165,15 +166,22 @@ export class SidebarHandle {
         });
     }
 
-    // ====RESIZE LOGIC=========================================
+    // ====RESIZE LOGIC (Pointer Events)=========================
 
-    private startResize(e: MouseEvent, container: HTMLElement): void {
+    private startResize(e: PointerEvent, container: HTMLElement): void {
         e.preventDefault();
 
         const startX = e.clientX;
         const startWidth = container.getBoundingClientRect().width;
+        let isResizing = true;
 
-        const onResize = (ev: MouseEvent) => {
+        const handle = e.target as HTMLElement;
+        // Захватываем указатель, чтобы события приходили, даже если мышь ушла за окно
+        handle.setPointerCapture(e.pointerId);
+
+        const onResize = (ev: PointerEvent) => {
+            if (!isResizing) return;
+
             // Считаем новую ширину: если мышь движется влево, ширина растет
             const deltaX = startX - ev.clientX;
             let newWidth = startWidth + deltaX;
@@ -185,16 +193,27 @@ export class SidebarHandle {
         };
 
         const stopResize = () => {
-            document.removeEventListener('mousemove', onResize);
-            document.removeEventListener('mouseup', stopResize);
+            if (!isResizing) return;
+            isResizing = false;
+
+            try {
+                handle.releasePointerCapture(e.pointerId);
+            } catch {
+                // ignore
+            }
+
+            document.removeEventListener('pointermove', onResize);
+            document.removeEventListener('pointerup', stopResize);
+            document.removeEventListener('pointercancel', stopResize);
 
             // Сохраняем итоговую ширину
             const finalWidth = container.getBoundingClientRect().width;
             void this.saveWidth(Math.round(finalWidth));
         };
 
-        document.addEventListener('mousemove', onResize);
-        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('pointermove', onResize);
+        document.addEventListener('pointerup', stopResize);
+        document.addEventListener('pointercancel', stopResize);
     }
 
     private closeSidebar(): void {
