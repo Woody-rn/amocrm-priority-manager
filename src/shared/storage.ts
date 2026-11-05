@@ -130,15 +130,17 @@ export class StorageService {
                 // Проверяем, реально ли изменились данные
                 const hasChanges =
                     (incoming.name && incoming.name !== existing.name) ||
-                    (incoming.companyName && incoming.companyName !== existing.companyName) ||
-                    (incoming.directionAndFunnel && incoming.directionAndFunnel !== existing.directionAndFunnel) ||
-                    (incoming.companyINN && incoming.companyINN !== existing.companyINN);
+                    (incoming.parserCompanyName && incoming.parserCompanyName !== existing.parserCompanyName) ||
+                    (incoming.originalCompanyName && incoming.originalCompanyName !== existing.originalCompanyName) ||
+                    (incoming.originalCompanyINN && incoming.originalCompanyINN !== existing.originalCompanyINN) ||
+                    (incoming.directionAndFunnel && incoming.directionAndFunnel !== existing.directionAndFunnel);
 
                 if (hasChanges) {
                     existing.name = incoming.name || existing.name;
-                    existing.companyName = incoming.companyName || existing.companyName;
+                    existing.parserCompanyName = incoming.parserCompanyName || existing.parserCompanyName;
+                    existing.originalCompanyName = incoming.originalCompanyName || existing.originalCompanyName;
+                    existing.originalCompanyINN = incoming.originalCompanyINN || existing.originalCompanyINN;
                     existing.directionAndFunnel = incoming.directionAndFunnel || existing.directionAndFunnel;
-                    existing.companyINN = incoming.companyINN || existing.companyINN;
                     existing.updatedAt = new Date().toISOString();
                     updatedCount++;
                 }

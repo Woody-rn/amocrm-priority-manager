@@ -2,14 +2,34 @@ import type { Client, TableColumn, TableSettings } from '../../shared/types';
 import { STATUS_CONFIG } from '../../shared/statuses';
 import { STORAGE_KEYS } from '../../shared/constants';
 import { StorageService } from '../../shared/storage';
+import { SettingsService } from '../../shared/settings';
 
 const storage = new StorageService();
+const settingsService = new SettingsService();
 
 // ====КОНФИГУРАЦИЯ КОЛОНОК===================================
 
 const COLUMNS: TableColumn[] = [
     { key: 'name', label: 'Название сделки', visible: true, sortable: true },
-    { key: 'companyName', label: 'Компания', visible: true, sortable: true },
+    {
+        key: 'leadUrl',
+        label: 'Ссылка',
+        visible: true,
+        sortable: false,
+        formatter: (c) => {
+            if (!c.leadUrl) return '—';
+            const a = document.createElement('a');
+            // baseUrl подставляется ниже (через замыкание)
+            a.href = c.leadUrl;
+            a.target = '_blank';
+            a.textContent = '🔗 Открыть';
+            a.style.color = 'var(--primary-color, #2196f3)';
+            a.style.textDecoration = 'none';
+            return a;
+        }
+    },
+    { key: 'parserCompanyName', label: 'Компания', visible: true, sortable: true },
+    { key: 'originalCompanyName', label: 'Компания (ориг.)', visible: false, sortable: true },
     {
         key: 'status',
         label: 'Статус',
@@ -18,7 +38,7 @@ const COLUMNS: TableColumn[] = [
         formatter: (c) => `${STATUS_CONFIG[c.status]?.icon || '❓'} ${STATUS_CONFIG[c.status]?.label || c.status}`
     },
     { key: 'directionAndFunnel', label: 'Воронка', visible: true, sortable: true },
-    { key: 'companyINN', label: 'ИНН', visible: false, sortable: true },
+    { key: 'originalCompanyINN', label: 'ИНН', visible: false, sortable: true },
     { key: 'leadId', label: 'leadId', visible: false, sortable: true },
     {
         key: 'createdAt',
@@ -40,6 +60,8 @@ const COLUMNS: TableColumn[] = [
 
 export function renderTable(container: HTMLElement): void {
     container.innerHTML = '';
+
+    let baseUrl = '';
 
     // 1. Панель управления
     const controls = document.createElement('div');
@@ -107,16 +129,21 @@ export function renderTable(container: HTMLElement): void {
         filteredClients = allClients.filter((c) => {
             if (status && c.status !== status) return false;
             if (query) {
-                const fields = [c.name, c.companyName, c.leadId, c.companyINN, c.directionAndFunnel]
-                    .filter(Boolean).map(String);
+                const fields = [
+                    c.name,
+                    c.parserCompanyName,
+                    c.originalCompanyName,
+                    c.leadId,
+                    c.originalCompanyINN,
+                    c.directionAndFunnel
+                ].filter(Boolean).map(String);
                 if (!fields.some((f) => f.toLowerCase().includes(query))) return false;
             }
             return true;
         });
 
-        // Сортировка
         if (sortKey !== null) {
-            const key = sortKey; // локальная копия с суженным типом
+            const key = sortKey;
             filteredClients.sort((a, b) => {
                 const aVal = String(a[key] ?? '');
                 const bVal = String(b[key] ?? '');
@@ -164,8 +191,24 @@ export function renderTable(container: HTMLElement): void {
             const row = document.createElement('tr');
             visibleCols.forEach((col) => {
                 const td = document.createElement('td');
-                if (col.formatter) {
-                    td.textContent = col.formatter(client);
+                if (col.key === 'leadUrl' && client.leadUrl) {
+                    // Специальная обработка для ссылки — подставляем baseUrl
+                    const a = document.createElement('a');
+                    a.href = client.leadUrl.startsWith('http')
+                        ? client.leadUrl
+                        : `${baseUrl}${client.leadUrl}`;
+                    a.target = '_blank';
+                    a.textContent = '🔗 Открыть';
+                    a.style.color = 'var(--primary-color, #2196f3)';
+                    a.style.textDecoration = 'none';
+                    td.appendChild(a);
+                } else if (col.formatter) {
+                    const result = col.formatter(client);
+                    if (result instanceof HTMLElement) {
+                        td.appendChild(result);
+                    } else {
+                        td.textContent = result;
+                    }
                 } else {
                     const value = client[col.key as keyof Client];
                     td.textContent = value == null ? '—' : String(value);
@@ -179,6 +222,8 @@ export function renderTable(container: HTMLElement): void {
 
     // 5. Загрузка данных
     const load = async () => {
+        const settings = await settingsService.getSettings();
+        baseUrl = settings.baseUrl || '';
         allClients = await storage.getAllClients();
         updateTable();
     };

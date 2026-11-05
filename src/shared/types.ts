@@ -37,8 +37,9 @@ export interface Client {
     status: ClientStatus;
     leadId: string | null;
     leadUrl: string | null;
-    companyINN: string | null;
-    companyName: string | null;
+    originalCompanyINN: string | null;
+    originalCompanyName: string | null;
+    parserCompanyName: string | null;
     directionAndFunnel: string | null;
     createdAt: string;
     updatedAt: string;
@@ -69,7 +70,7 @@ export interface TableColumn {
     label: string;
     visible: boolean;
     sortable?: boolean;
-    formatter?: (client: Client) => string;
+    formatter?: (client: Client) => string | HTMLElement; // <-- добавили HTMLElement
 }
 
 export interface TableSettings {

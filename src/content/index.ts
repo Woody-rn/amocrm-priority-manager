@@ -138,7 +138,7 @@ class ContentApp {
 
                 const client = this.resolver.getClient(leadId, clientName);
                 const otherDealsCount = client
-                    ? this.resolver.getOtherDealsCount(client.companyName, client.directionAndFunnel)
+                    ? this.resolver.getOtherDealsCount(client.parserCompanyName, client.directionAndFunnel)
                     : 0;
 
                 this.highlighter.apply(element, status, clientName, otherDealsCount);

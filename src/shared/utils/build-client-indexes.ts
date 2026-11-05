@@ -27,10 +27,10 @@ export function buildClientIndexes(clients: Client[]): ClientIndexes {
         }
         byName.set(client.name, client);
 
-        if (client.companyName) {
-            const existing = byCompany.get(client.companyName) || [];
+        if (client.parserCompanyName) {
+            const existing = byCompany.get(client.parserCompanyName) || [];
             existing.push(client);
-            byCompany.set(client.companyName, existing);
+            byCompany.set(client.parserCompanyName, existing);
         }
     }
 

@@ -52,10 +52,10 @@ export class StatusResolver {
      * Возвращает количество других сделок у этой же компании,
      * но с другим продуктом (воронкой).
      */
-    getOtherDealsCount(companyName: string | null, currentFunnel: string | null): number {
-        if (!companyName) return 0;
+    getOtherDealsCount(parserCompanyName : string | null, currentFunnel: string | null): number {
+        if (!parserCompanyName ) return 0;
 
-        const deals = this.indexes.byCompany.get(companyName);
+        const deals = this.indexes.byCompany.get(parserCompanyName );
         if (!deals) return 0;
 
         const currentProduct = this.extractProduct(currentFunnel);

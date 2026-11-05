@@ -21,24 +21,37 @@ export class DetailClientExtractor implements IClientExtractor {
 
         const leadId = extractLeadIdFromElement(element);
         const leadUrl = leadId ? `/leads/detail/${leadId}` : null;
-        const companyName = this.extractCompanyName(name);
-        const companyINN = this.extractINN();
+
+        const parserCompanyName = this.extractParserCompanyName(name);
+        const originalCompanyName = this.extractOriginalCompanyName();
+        const originalCompanyINN = this.extractINN();
 
         return createClient({
             name,
             status: 'new',
             leadId,
             leadUrl,
-            companyINN,
-            companyName,
+            originalCompanyINN,
+            originalCompanyName,
+            parserCompanyName,
             directionAndFunnel: null // Пока не парсим воронку на этой странице
         });
     }
 
-    private extractCompanyName(fullName: string): string {
+    private extractParserCompanyName(fullName: string): string {
         return fullName
             .replace(/\s*-\s*(nanoCAD|нанокад|норма|Norma|NormaCS|техэкспорт).*$/i, '')
             .trim();
+    }
+
+    /**
+     * Пытается извлечь точное название компании из блока "Компания" в карточке сделки.
+     * Если блока нет — возвращает null.
+     */
+    private extractOriginalCompanyName(): string | null {
+        // В amoCRM блок компании обычно находится в .card-fields__company
+        const companyLink = document.querySelector('.card-fields__company a, .card-fields-company a');
+        return companyLink?.textContent?.trim() || null;
     }
 
     private extractINN(): string | null {

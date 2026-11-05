@@ -212,9 +212,10 @@ export function applyFilters(clients: Client[], state: FilterState): Client[] {
             const query = state.searchQuery.toLowerCase().trim();
             const fields = [
                 client.name,
-                client.companyName,
+                client.parserCompanyName,
+                client.originalCompanyName,
                 client.leadId,
-                client.companyINN
+                client.originalCompanyINN
             ].filter(Boolean) as string[];
 
             const matches = fields.some((f) =>

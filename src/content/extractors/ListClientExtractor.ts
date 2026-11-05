@@ -24,7 +24,7 @@ export class ListClientExtractor implements IClientExtractor {
 
         const leadId = extractLeadIdFromElement(element);
         const leadUrl = leadId ? `/leads/detail/${leadId}` : null;
-        const companyName = this.extractCompanyName(name);
+        const parserCompanyName = this.extractCompanyName(name);
 
         // На /todo есть воронка, на /leads/list - нет
         const directionAndFunnel = this.pageType === 'todo'
@@ -36,8 +36,9 @@ export class ListClientExtractor implements IClientExtractor {
             status: 'new',
             leadId,
             leadUrl,
-            companyINN: null, // На этих страницах ИНН нет
-            companyName,
+            originalCompanyINN: null,
+            originalCompanyName: null,
+            parserCompanyName: parserCompanyName,
             directionAndFunnel
         });
     }
