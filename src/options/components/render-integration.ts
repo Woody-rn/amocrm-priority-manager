@@ -25,7 +25,7 @@ export function renderIntegration(container: HTMLElement): void {
                     ${t('integrationSelectorTodoDesc')}
                 </span>
                 <br><br>
-                <strong>Что парсим:</strong> name, leadId, companyName, directionAndFunnel
+                <strong>Что парсим:</strong> name, leadId, parserCompanyName, directionAndFunnel
             </div>
         </div>
 
@@ -41,7 +41,7 @@ export function renderIntegration(container: HTMLElement): void {
                     ${t('integrationSelectorDetailDesc')}
                 </span>
                 <br><br>
-                <strong>Что парсим:</strong> name, leadId (из span.tag), companyName, companyINN
+                <strong>Что парсим:</strong> name, leadId (из span.tag), originalCompanyName, originalCompanyINN
             </div>
         </div>
 
@@ -56,6 +56,8 @@ export function renderIntegration(container: HTMLElement): void {
                 <span style="font-size: 12px; color: #888;">
                     ${t('integrationSelectorTodoDesc')}
                 </span>
+                <br><br>
+                <strong>Что парсим:</strong> только обогащение (originalCompanyName, originalCompanyINN) для существующих сделок. Новые сделки не создаются.
             </div>
         </div>
 
@@ -65,7 +67,38 @@ export function renderIntegration(container: HTMLElement): void {
     `;
     container.appendChild(pagesSection);
 
-    // ====2. МЕХАНИЗМ ОБНОВЛЕНИЯ===============================
+    // ====2. ТРЕБОВАНИЯ К НАСТРОЙКЕ AMOCRM====================
+    const requirementsSection = document.createElement('section');
+    requirementsSection.className = 'help-section';
+
+    requirementsSection.innerHTML = `
+        <h2>⚙️ ${t('integrationRequirementsTitle')}</h2>
+        <p class="help-tech-intro">${t('integrationRequirementsIntro')}</p>
+
+        <div class="help-tech-item" style="border-left-color: #4caf50;">
+            <div class="help-tech-header">${t('integrationReqTodoTitle')}</div>
+            <div class="help-tech-desc">
+                <ul style="margin: 8px 0; padding-left: 20px;">
+                    <li>${t('integrationReqTodoObject')}</li>
+                    <li>${t('integrationReqTodoFunnel')}</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="help-tech-item" style="border-left-color: #ff9800;">
+            <div class="help-tech-header">${t('integrationReqListTitle')}</div>
+            <div class="help-tech-desc">
+                <ul style="margin: 8px 0; padding-left: 20px;">
+                    <li>${t('integrationReqListName')}</li>
+                    <li>${t('integrationReqListCompany')}</li>
+                    <li>${t('integrationReqListINN')}</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    container.appendChild(requirementsSection);
+
+    // ====3. МЕХАНИЗМ ОБНОВЛЕНИЯ===============================
     const lifecycleSection = document.createElement('section');
     lifecycleSection.className = 'help-section';
 
@@ -86,7 +119,7 @@ export function renderIntegration(container: HTMLElement): void {
     `;
     container.appendChild(lifecycleSection);
 
-    // ====3. ТОЧКИ ОТКАЗА======================================
+    // ====4. ТОЧКИ ОТКАЗА======================================
     const failuresSection = document.createElement('section');
     failuresSection.className = 'help-section';
 
@@ -113,7 +146,7 @@ export function renderIntegration(container: HTMLElement): void {
     `;
     container.appendChild(failuresSection);
 
-    // ====4. ДИАГНОСТИКА=======================================
+    // ====5. ДИАГНОСТИКА=======================================
     const diagSection = document.createElement('section');
     diagSection.className = 'help-section';
 

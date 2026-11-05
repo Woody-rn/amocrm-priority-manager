@@ -167,5 +167,32 @@
   },
   "integrationLifecycleIntro": {
     "message": "The extension uses a combination of background and content scripts to track changes:"
+  },
+  "integrationRequirementsTitle": {
+    "message": "amoCRM configuration requirements"
+  },
+  "integrationRequirementsIntro": {
+    "message": "For the extension to work correctly, the amoCRM tables must be configured as follows:"
+  },
+  "integrationReqTodoTitle": {
+    "message": "Tasks page (/todo)"
+  },
+  "integrationReqTodoObject": {
+    "message": "Column 'Object' (or 'Deal name') — required (for deal collection)."
+  },
+  "integrationReqTodoFunnel": {
+    "message": "Column 'Deal stage' (or funnel) — recommended (for product grouping)."
+  },
+  "integrationReqListTitle": {
+    "message": "Deals page (/leads/list)"
+  },
+  "integrationReqListName": {
+    "message": "Column 'Deal name' — required (for leadId extraction)."
+  },
+  "integrationReqListCompany": {
+    "message": "Column 'Company' (field-code=\"company_name\") — required (for exact company name)."
+  },
+  "integrationReqListINN": {
+    "message": "Column 'INN' (field-code=\"cf1699317\") — recommended (for data enrichment)."
   }
 }

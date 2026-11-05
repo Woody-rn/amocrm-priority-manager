@@ -1,6 +1,7 @@
 import type { Client, ClientStatus } from './types';
 import { STORAGE_KEYS } from './constants';
 import { STATUS_CONFIG } from './statuses';
+import type { EnrichmentData } from '../content/extractors/EnrichmentExtractor';
 
 // ====CLIENT FACTORY==========================================
 
@@ -236,5 +237,49 @@ export class StorageService {
         }
 
         return counts;
+    }
+
+    /**
+     * Обогащает существующих клиентов данными (originalCompanyName, originalCompanyINN).
+     * НЕ создаёт новых клиентов.
+     */
+    async enrichClients(data: EnrichmentData[]): Promise<number> {
+        const existingClients = await this.getAllClients();
+        const clientsByLeadId = new Map(
+            existingClients
+                .filter((c) => c.leadId)
+                .map((c) => [c.leadId as string, c])
+        );
+
+        let enrichedCount = 0;
+
+        for (const item of data) {
+            const existing = clientsByLeadId.get(item.leadId);
+            if (!existing) continue; // <-- НЕ СОЗДАЁМ НОВЫХ
+
+            let hasChanges = false;
+
+            if (item.originalCompanyName && item.originalCompanyName !== existing.originalCompanyName) {
+                existing.originalCompanyName = item.originalCompanyName;
+                hasChanges = true;
+            }
+
+            if (item.originalCompanyINN && item.originalCompanyINN !== existing.originalCompanyINN) {
+                existing.originalCompanyINN = item.originalCompanyINN;
+                hasChanges = true;
+            }
+
+            if (hasChanges) {
+                existing.updatedAt = new Date().toISOString();
+                enrichedCount++;
+            }
+        }
+
+        if (enrichedCount > 0) {
+            await this.saveAllClients(existingClients);
+            console.log(`[StorageService] Обогащено: ${enrichedCount} записей`);
+        }
+
+        return enrichedCount;
     }
 }

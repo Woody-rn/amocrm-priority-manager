@@ -10,6 +10,7 @@ import { QuickPanel } from './quick-panel';
 import { SidebarHandle } from './sidebar-handle';
 import { ExtractorFactory } from './extractors/ExtractorFactory';
 import type { IClientExtractor } from './extractors/IClientExtractor';
+import { EnrichmentExtractor } from './extractors/EnrichmentExtractor';
 import { DiagnosticsService } from '../shared/diagnostics';
 
 class ContentApp {
@@ -19,6 +20,7 @@ class ContentApp {
         this.handleStatusSelect(clientName, status)
     );
     private diag = new DiagnosticsService('content');
+    private enrichmentExtractor = new EnrichmentExtractor();
 
     private extractor: IClientExtractor | null = null;
     private resolver: StatusResolver | null = null;
@@ -45,7 +47,6 @@ class ContentApp {
         this.startDomObserver();
         this.startPageLoaderObserver();
 
-        // Трассировка нужна только когда включена отладка
         if (this.diag.isEnabled()) {
             this.startAmoTrace();
         }
@@ -85,6 +86,8 @@ class ContentApp {
                 const elements = this.extractor.findElements();
                 this.diag.log(`REFRESH: found ${elements.length} elements for collect`);
                 await this.collectNewClients();
+            } else if (pageType === 'leadsList') {
+                await this.enrichFromLeadsList();
             }
 
             const clients = await this.storage.getAllClients();
@@ -183,6 +186,20 @@ class ContentApp {
 
         if (newClients.length > 0) {
             await this.storage.saveNewClients(newClients);
+        }
+    }
+
+    private async enrichFromLeadsList(): Promise<void> {
+        const elements = this.enrichmentExtractor.findElements();
+        const data = elements
+            .map((el) => this.enrichmentExtractor.extractData(el))
+            .filter((d): d is NonNullable<typeof d> => d !== null);
+
+        this.diag.log(`ENRICH: found ${data.length} deals to enrich`);
+
+        if (data.length > 0) {
+            const enrichedCount = await this.storage.enrichClients(data);
+            this.diag.log(`ENRICH: ${enrichedCount} records enriched`);
         }
     }
 

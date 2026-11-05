@@ -167,5 +167,32 @@
   },
   "integrationLifecycleIntro": {
     "message": "Расширение использует комбинацию фоновых и контентных скриптов для отслеживания изменений:"
+  },
+  "integrationRequirementsTitle": {
+    "message": "Требования к настройке amoCRM"
+  },
+  "integrationRequirementsIntro": {
+    "message": "Для корректной работы расширения таблицы в amoCRM должны быть настроены следующим образом:"
+  },
+  "integrationReqTodoTitle": {
+    "message": "Страница «Задачи» (/todo)"
+  },
+  "integrationReqTodoObject": {
+    "message": "Колонка «Объект» (или «Название сделки») — обязательна (для сбора сделок)."
+  },
+  "integrationReqTodoFunnel": {
+    "message": "Колонка «Этап сделки» (или воронка) — желательна (для группировки по продукту)."
+  },
+  "integrationReqListTitle": {
+    "message": "Страница «Сделки» (/leads/list)"
+  },
+  "integrationReqListName": {
+    "message": "Колонка «Название сделки» — обязательна (для получения leadId)."
+  },
+  "integrationReqListCompany": {
+    "message": "Колонка «Компания» (field-code=\"company_name\") — обязательна (для точного названия компании)."
+  },
+  "integrationReqListINN": {
+    "message": "Колонка «ИНН» (field-code=\"cf1699317\") — желательна (для обогащения данных)."
   }
 }
