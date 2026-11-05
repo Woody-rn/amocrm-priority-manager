@@ -30,7 +30,8 @@ export const STORAGE_KEYS = {
     sidebarCollapsedState: 'sidebarCollapsedState',
     sidebarWidth: 'sidebarWidth',
     diagnosticsEnabled: 'diagnosticsEnabled',
-    diagnosticsLog: 'diagnosticsLog'
+    diagnosticsLog: 'diagnosticsLog',
+    tableSettings: 'tableSettings',
 } as const;
 
 // ====SIDEBAR HANDLE (ручка "Панель")========================

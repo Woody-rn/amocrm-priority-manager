@@ -529,3 +529,98 @@ body {
     padding: 3px 0;
     font-size: 14px;
 }
+
+/* ====TABLE================================================== */
+.table-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.table-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg-card, #fff);
+    color: var(--text-main, #333);
+}
+
+.table-filter {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg-card, #fff);
+    color: var(--text-main, #333);
+}
+
+.table-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-body, #f9f9f9);
+    border-radius: 8px;
+}
+
+.table-column-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.table-column-toggle input {
+    margin: 0;
+    cursor: pointer;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border-color, #eee);
+    border-radius: 8px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table thead {
+    background: var(--bg-body, #f5f5f5);
+    position: sticky;
+    top: 0;
+}
+
+.data-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-main, #333);
+    border-bottom: 2px solid var(--border-color, #ddd);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    color: var(--text-muted, #555);
+}
+
+.data-table tbody tr:hover {
+    background: var(--bg-hover, #f9f9f9);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}

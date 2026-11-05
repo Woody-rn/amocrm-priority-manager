@@ -9,6 +9,7 @@ import { renderIntegration } from './components/render-integration';
 import { renderHistory } from './components/render-history';
 import { YandexDiskStorage } from '../shared/cloud/YandexDiskStorage';
 import { DiagnosticsService } from '../shared/diagnostics';
+import { renderTable, loadTableSettings } from './components/render-table';
 
 class OptionsApp {
     private storage = new StorageService();
@@ -26,6 +27,7 @@ class OptionsApp {
         this.checkHash();
         this.addEventListeners();
         await this.renderChart();
+        await this.renderTableTab();
         this.renderFeaturesAndHistory();
         this.renderIntegrationTab();
         await this.setupCloud();
@@ -406,6 +408,14 @@ class OptionsApp {
         document.getElementById('clearDiagLogBtn')?.addEventListener('click', () => {
             void this.clearDiagLog();
         });
+    }
+
+    private async renderTableTab(): Promise<void> {
+        const container = document.getElementById('tableContainer');
+        if (!container) return;
+
+        await loadTableSettings();
+        renderTable(container);
     }
 }
 

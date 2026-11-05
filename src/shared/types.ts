@@ -61,3 +61,17 @@ export interface ChangelogVersion {
 export interface ChangelogData {
     versions: ChangelogVersion[];
 }
+
+// ====ТАБЛИЦА================================================
+
+export interface TableColumn {
+    key: keyof Client | 'actions';
+    label: string;
+    visible: boolean;
+    sortable?: boolean;
+    formatter?: (client: Client) => string;
+}
+
+export interface TableSettings {
+    visibleColumns: string[]; // массив ключей (keyof Client)
+}
