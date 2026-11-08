@@ -31,79 +31,71 @@
                 <div class="chart-container" id="statsChartContainer" style="position: relative; height: 400px;"></div>
             </div>
 
-            <div class="options-card" style="margin-top: 24px;">
+            <div class="options-card">
                 <h2>Таблица данных</h2>
                 <div id="tableContainer"></div>
             </div>
         </section>
 
-        <!-- Основные настройки -->
+        <!-- Настройки -->
         <section class="options-panel" id="tab-settings" style="display: none;">
-            <div class="options-card">
-                <h2>Основные настройки</h2>
+            <div class="settings-container">
 
-                <!-- Сетка для домена и темы -->
-                <div class="settings-grid-2">
-                    <div class="options-field">
-                        <label for="baseUrlInput">Базовый домен amoCRM</label>
-                        <input type="text" id="baseUrlInput" placeholder="https://mycompany.amocrm.ru">
-                        <small>Используется для формирования ссылок на сделки.</small>
-                    </div>
-
-                    <div class="options-field">
-                        <label for="themeSelect">Тема оформления</label>
-                        <select id="themeSelect">
-                            <option value="system">Системная</option>
-                            <option value="light">Светлая</option>
-                            <option value="dark">Тёмная</option>
-                        </select>
-                    </div>
-                </div>
-
-                <hr>
-
-                <!-- Сетка для отладки и бэкапа -->
-                <div class="settings-grid-2">
-                    <!-- Левая колонка: Отладка -->
-                    <div class="settings-column">
-                        <h3>Отладка</h3>
+                <!-- Блок 1: Основные настройки -->
+                <div class="options-card">
+                    <h2>Основные настройки</h2>
+                    <div class="settings-grid-2">
                         <div class="options-field">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="diagnosticsEnabled">
-                                <span>Включить отладку (логирование в фоне)</span>
-                            </label>
-                            <small>Логи будут копиться в расширении. Используй при багах и присылай разработчику.</small>
+                            <label for="baseUrlInput">Базовый домен amoCRM</label>
+                            <input type="text" id="baseUrlInput" placeholder="https://mycompany.amocrm.ru">
+                            <small>Используется для формирования ссылок на сделки.</small>
                         </div>
-                        <div class="options-actions" style="margin-top: 12px;">
-                            <button id="downloadDiagLogBtn" class="btn">📥 Скачать лог</button>
-                            <button id="clearDiagLogBtn" class="btn btn-danger">🗑 Очистить лог</button>
+                        <div class="options-field">
+                            <label for="themeSelect">Тема оформления</label>
+                            <select id="themeSelect">
+                                <option value="system">Системная</option>
+                                <option value="light">Светлая</option>
+                                <option value="dark">Тёмная</option>
+                            </select>
                         </div>
                     </div>
+                    <button id="saveSettingsBtn" class="btn btn-primary" style="margin-top: 16px;">Сохранить настройки</button>
+                </div>
 
-                    <!-- Правая колонка: Резервное копирование -->
-                    <div class="settings-column">
-                        <h3>Резервное копирование</h3>
-                        <div class="options-actions" style="margin-top: 12px;">
-                            <button id="exportBtn" class="btn">📤 Экспорт JSON</button>
-                            <button id="importBtn" class="btn">📥 Импорт JSON</button>
-                            <input type="file" id="importFile" accept=".json" hidden>
+                <!-- Блок 2: Отладка и Резервное копирование -->
+                <div class="options-card">
+                    <div class="settings-grid-2">
+                        <div class="settings-column">
+                            <h3>Отладка</h3>
+                            <div class="options-field">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="diagnosticsEnabled">
+                                    <span>Включить отладку</span>
+                                </label>
+                                <small>Логи будут копиться в расширении.</small>
+                            </div>
+                            <div class="options-actions" style="margin-top: 12px;">
+                                <button id="downloadDiagLogBtn" class="btn">📥 Скачать лог</button>
+                                <button id="clearDiagLogBtn" class="btn btn-danger">🗑 Очистить лог</button>
+                            </div>
+                        </div>
+                        <div class="settings-column">
+                            <h3>Резервное копирование</h3>
+                            <div class="options-actions" style="margin-top: 12px;">
+                                <button id="exportBtn" class="btn">📤 Экспорт JSON</button>
+                                <button id="importBtn" class="btn">📥 Импорт JSON</button>
+                                <input type="file" id="importFile" accept=".json" hidden>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Кнопка сохранения -->
-                <button id="saveSettingsBtn" class="btn btn-primary" style="align-self: flex-start; margin-top: 12px;">Сохранить настройки</button>
-
-                <hr>
-
-                <!-- Синхронизация с Яндекс.Диском (на всю ширину) -->
-                <div class="cloud-section">
+                <!-- Блок 3: Яндекс.Диск -->
+                <div class="options-card">
                     <h2>☁️ Синхронизация с Яндекс.Диском</h2>
                     <div class="cloud-controls">
                         <button id="cloudConnectBtn" class="btn">🔗 Подключить</button>
-                        <a id="cloudOpenBtn" href="https://disk.yandex.ru/client/disk/amo-backups" target="_blank" class="btn" style="display: none; text-decoration: none;">
-                            🌐 Открыть Диск
-                        </a>
+                        <a id="cloudOpenBtn" href="https://disk.yandex.ru/client/disk/amo-backups" target="_blank" class="btn" style="display: none; text-decoration: none;">🌐 Открыть Диск</a>
                         <button id="cloudDisconnectBtn" class="btn btn-danger" style="display: none;">🚪 Отключить</button>
                         <button id="cloudUploadBtn" class="btn btn-primary" disabled>💾 Сохранить в облако</button>
                     </div>
@@ -112,29 +104,30 @@
                     <div class="cloud-backups" id="cloudBackups"></div>
                 </div>
 
-                <hr>
-
-                <!-- Опасная зона (на всю ширину) -->
-                <h2 style="color: var(--danger-color);">Опасная зона</h2>
-                <div class="options-actions">
-                    <button id="clearAllBtn" class="btn btn-danger">🗑 Очистить все данные</button>
+                <!-- Блок 4: Опасная зона -->
+                <div class="options-card" style="border: 1px solid rgba(244, 67, 54, 0.2);">
+                    <h2 style="color: var(--danger-color);">⚠️ Опасная зона</h2>
+                    <div class="options-actions">
+                        <button id="clearAllBtn" class="btn btn-danger">🗑 Очистить все данные</button>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Функционал -->
         <section class="options-panel" id="tab-features" style="display: none;">
-            <div class="options-card" id="featuresContainer"></div>
+            <!-- Контейнер прозрачный, карточки будут внутри -->
+            <div id="featuresContainer" class="help-container"></div>
         </section>
 
         <!-- Интеграция с amoCRM -->
         <section class="options-panel" id="tab-integration" style="display: none;">
-            <div class="options-card" id="integrationContainer"></div>
+            <div id="integrationContainer" class="help-container"></div>
         </section>
 
         <!-- История версий -->
         <section class="options-panel" id="tab-history" style="display: none;">
-            <div class="options-card" id="historyContainer"></div>
+            <div id="historyContainer" class="help-container"></div>
         </section>
     </main>
 

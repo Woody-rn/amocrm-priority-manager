@@ -78,9 +78,15 @@ body {
 /* ====CONTENT================================================ */
 .options-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .options-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -89,11 +95,13 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Карточка (Настройки, Аналитика) */
 .options-card {
     background: var(--bg-card, #fff);
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
 }
 
 .options-card h2 {
@@ -102,15 +110,9 @@ body {
     color: var(--text-main, #333);
 }
 
-/* ====FIELDS (Сетка для настроек)============================ */
-#tab-settings .options-card {
-    display: flex;
-    flex-direction: column;
-    gap: 24px; /* Расстояние между блоками */
-}
-
-#tab-settings .options-field {
-    margin-bottom: 0;
+/* ====FIELDS================================================= */
+.options-field {
+    margin-bottom: 16px;
 }
 
 .options-field > label {
@@ -170,7 +172,7 @@ body {
 .settings-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 24px;
 }
 
 @media (max-width: 768px) {
@@ -188,8 +190,15 @@ body {
 
 .settings-column h3 {
     margin: 0;
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-main, #333);
+    font-weight: 600;
+}
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 /* ====BUTTONS================================================ */
@@ -240,13 +249,6 @@ body {
     margin-bottom: 0;
 }
 
-/* Стили для разделителя (hr) */
-.options-card hr {
-    margin: 0;
-    border: none;
-    border-top: 1px solid var(--border-color, #eee);
-}
-
 /* ====FOOTER================================================= */
 .options-footer {
     display: flex;
@@ -262,11 +264,6 @@ body {
 }
 
 /* ====CLOUD SYNC============================================= */
-.cloud-section {
-    padding-top: 24px;
-    border-top: 1px solid var(--border-color, #eee);
-}
-
 .cloud-controls {
     display: flex;
     gap: 12px;
@@ -324,7 +321,6 @@ body {
     background: var(--bg-hover, #f0f0f0);
 }
 
-/* Стили для кнопки удаления бэкапа */
 .cloud-backup-item .delete-btn {
     border-color: rgba(244, 67, 54, 0.2);
     background: rgba(244, 67, 54, 0.05);
@@ -369,13 +365,30 @@ body {
     font-size: 13px;
 }
 
-/* ====HELP STYLES (Современные карточки)====================== */
-.help-section {
-    margin-bottom: 32px;
+/* ====HELP STYLES (Парящие карточки)======================== */
+
+/* Контейнер для карточек */
+.help-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Отступ между карточками */
 }
 
-.help-section:last-child {
-    margin-bottom: 0;
+/* САМИ КАРТОЧКИ - жестко задаем стили */
+.help-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Выраженная тень */
+    border: 1px solid #f0f0f0;
+}
+
+/* Внутренние блоки (логика, тех.инфа) */
+.help-logic-block,
+.help-tech-item,
+.help-status-row {
+    background: #f9f9f9; /* Серый фон внутри белой карточки */
+    border-radius: 8px;
 }
 
 .help-section h2 {
@@ -406,14 +419,12 @@ body {
     align-items: baseline;
     gap: 12px;
     padding: 6px 10px;
-    border-radius: 6px;
-    background: var(--bg-body, #f9f9f9);
     border: 1px solid transparent;
     transition: background 0.2s;
 }
 
 .help-status-row:hover {
-    background: var(--bg-hover, #f0f0f0);
+    background: #f0f0f0;
 }
 
 .help-status-row__left {
@@ -473,8 +484,6 @@ body {
 
 .help-logic-block {
     padding: 16px;
-    background: var(--bg-body, #f9f9f9);
-    border-radius: 8px;
 }
 
 .help-logic-block h4 {
@@ -511,8 +520,6 @@ body {
 
 .help-tech-item {
     padding: 12px 16px;
-    background: var(--bg-body, #f9f9f9);
-    border-radius: 8px;
     border-left: 3px solid var(--primary-color, #2196f3);
 }
 
@@ -525,13 +532,13 @@ body {
 
 .help-tech-code {
     display: inline-block;
-    background: var(--bg-card, #fff);
+    background: #ffffff;
     padding: 4px 8px;
     border-radius: 4px;
     font-family: monospace;
     font-size: 13px;
     color: var(--danger-color, #d32f2f);
-    border: 1px solid var(--border-color, #eee);
+    border: 1px solid #eee;
     margin-bottom: 8px;
 }
 
@@ -615,7 +622,6 @@ body {
     color: var(--text-main, #333);
 }
 
-/* Кнопка и выпадающее меню колонок */
 .table-columns-btn {
     padding: 8px 12px;
     border: 1px solid var(--border-color, #ddd);
@@ -688,7 +694,6 @@ body {
     accent-color: var(--primary-color, #2196f3);
 }
 
-/* Таблица с фиксированной высотой */
 .table-wrapper {
     overflow: auto;
     max-height: calc(100vh - 300px);
