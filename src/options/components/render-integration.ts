@@ -21,7 +21,7 @@ export function renderIntegration(container: HTMLElement): void {
                 <strong>Селектор:</strong>
                 <code class="help-tech-code">${SELECTORS.todo}</code>
                 <br>
-                <span style="font-size: 12px; color: #888;">
+                <span style="font-size: 12px; color: var(--text-light, #888);">
                     ${t('integrationSelectorTodoDesc')}
                 </span>
                 <br><br>
@@ -37,7 +37,7 @@ export function renderIntegration(container: HTMLElement): void {
                 <strong>Селектор:</strong>
                 <code class="help-tech-code">${SELECTORS.leadsDetail}</code>
                 <br>
-                <span style="font-size: 12px; color: #888;">
+                <span style="font-size: 12px; color: var(--text-light, #888);">
                     ${t('integrationSelectorDetailDesc')}
                 </span>
                 <br><br>
@@ -53,7 +53,7 @@ export function renderIntegration(container: HTMLElement): void {
                 <strong>Селектор:</strong>
                 <code class="help-tech-code">${SELECTORS.leadsList}</code>
                 <br>
-                <span style="font-size: 12px; color: #888;">
+                <span style="font-size: 12px; color: var(--text-light, #888);">
                     ${t('integrationSelectorTodoDesc')}
                 </span>
                 <br><br>
@@ -61,7 +61,7 @@ export function renderIntegration(container: HTMLElement): void {
             </div>
         </div>
 
-        <div class="help-tech-note" style="margin-top: 16px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196f3;">
+        <div class="help-tech-note" style="margin-top: 16px; border-left: 3px solid var(--primary-color, #2196f3);">
             <strong>${t('integrationLeadIdNote')}</strong>
         </div>
     `;

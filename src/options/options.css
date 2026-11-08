@@ -374,20 +374,20 @@ body {
     gap: 24px; /* Отступ между карточками */
 }
 
-/* САМИ КАРТОЧКИ - жестко задаем стили */
+/* САМИ КАРТОЧКИ - используем переменные для поддержки тем */
 .help-section {
-    background: #ffffff;
+    background: var(--bg-card, #ffffff);
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Выраженная тень */
-    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color, #f0f0f0);
 }
 
 /* Внутренние блоки (логика, тех.инфа) */
 .help-logic-block,
 .help-tech-item,
 .help-status-row {
-    background: #f9f9f9; /* Серый фон внутри белой карточки */
+    background: var(--bg-body, #f9f9f9); /* Используем переменную фона */
     border-radius: 8px;
 }
 
