@@ -5,9 +5,6 @@ import type { EnrichmentData } from '../content/extractors/EnrichmentExtractor';
 
 // ====CLIENT FACTORY==========================================
 
-/**
- * Создаёт нового клиента с автоматически сгенерированным id.
- */
 export function createClient(data: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>): Client {
     const now = new Date().toISOString();
     return {
@@ -20,10 +17,6 @@ export function createClient(data: Omit<Client, 'id' | 'createdAt' | 'updatedAt'
 
 // ====STORAGE SERVICE=========================================
 
-/**
- * Сервис для работы с chrome.storage.local.
- * Единая точка доступа к данным клиентов.
- */
 export class StorageService {
     private storage = chrome.storage.local;
 
@@ -44,7 +37,6 @@ export class StorageService {
         return clients.find((c) => c.leadId === leadId) ?? null;
     }
 
-
     async getClientByName(name: string): Promise<Client | null> {
         const clients = await this.getAllClients();
         return clients.find((c) => c.name === name) ?? null;
@@ -52,18 +44,9 @@ export class StorageService {
 
     // ====ЗАПИСЬ==============================================
 
-    /**
-     * Сохраняет клиента (upsert по leadId).
-     * Если клиент с таким leadId уже есть — обновляет.
-     * Если нет — создаёт нового.
-     *
-     * Без leadId сохранять нельзя — вернёт null и лог в консоль.
-     */
     async saveClient(client: Client): Promise<Client | null> {
         if (!client.leadId) {
-            console.error(
-                `[StorageService] saveClient: отсутствует leadId для "${client.name}"`
-            );
+            console.error(`[StorageService] saveClient: отсутствует leadId для "${client.name}"`);
             return null;
         }
 
@@ -76,7 +59,6 @@ export class StorageService {
         };
 
         if (index !== -1) {
-            // Сохраняем createdAt от старой записи
             updatedClient.createdAt = clients[index].createdAt;
             updatedClient.id = clients[index].id;
             clients[index] = updatedClient;
@@ -88,52 +70,31 @@ export class StorageService {
         return updatedClient;
     }
 
-    /**
-     * Перезаписывает весь массив клиентов.
-     * Используется для импорта.
-     */
     async saveAllClients(clients: Client[]): Promise<void> {
         await this.storage.set({ [STORAGE_KEYS.clients]: clients });
     }
 
-    /**
-     * Массовое добавление или обновление клиентов.
-     * - Если клиента нет — создаёт нового.
-     * - Если есть — обновляет метаданные (name, companyName, directionAndFunnel, companyINN),
-     *   но НЕ трогает status, id, createdAt и leadUrl.
-     */
     async saveNewClients(newClients: Client[]): Promise<number> {
         const existingClients = await this.getAllClients();
-        const clientsByLeadId = new Map(
-            existingClients
-                .filter((c) => c.leadId)
-                .map((c) => [c.leadId as string, c])
-        );
-
+        const clientsByLeadId = new Map(existingClients.filter((c) => c.leadId).map((c) => [c.leadId as string, c]));
         const seenInBatch = new Set<string>();
         let addedCount = 0;
         let updatedCount = 0;
 
         for (const incoming of newClients) {
-            if (!incoming.leadId) {
-                console.error(
-                    `[StorageService] saveNewClients: пропущен "${incoming.name}" — нет leadId`
-                );
-                continue;
-            }
-
+            if (!incoming.leadId) continue;
             if (seenInBatch.has(incoming.leadId)) continue;
             seenInBatch.add(incoming.leadId);
 
             const existing = clientsByLeadId.get(incoming.leadId);
 
             if (existing) {
-                // Проверяем, реально ли изменились данные
                 const hasChanges =
                     (incoming.name && incoming.name !== existing.name) ||
                     (incoming.parserCompanyName && incoming.parserCompanyName !== existing.parserCompanyName) ||
                     (incoming.originalCompanyName && incoming.originalCompanyName !== existing.originalCompanyName) ||
                     (incoming.originalCompanyINN && incoming.originalCompanyINN !== existing.originalCompanyINN) ||
+                    (incoming.companyUrl && incoming.companyUrl !== existing.companyUrl) ||
                     (incoming.directionAndFunnel && incoming.directionAndFunnel !== existing.directionAndFunnel);
 
                 if (hasChanges) {
@@ -141,11 +102,11 @@ export class StorageService {
                     existing.parserCompanyName = incoming.parserCompanyName || existing.parserCompanyName;
                     existing.originalCompanyName = incoming.originalCompanyName || existing.originalCompanyName;
                     existing.originalCompanyINN = incoming.originalCompanyINN || existing.originalCompanyINN;
+                    existing.companyUrl = incoming.companyUrl || existing.companyUrl;
                     existing.directionAndFunnel = incoming.directionAndFunnel || existing.directionAndFunnel;
                     existing.updatedAt = new Date().toISOString();
                     updatedCount++;
                 }
-                // Если изменений нет — НЕ трогаем updatedAt
             } else {
                 existingClients.push(incoming);
                 clientsByLeadId.set(incoming.leadId, incoming);
@@ -155,15 +116,11 @@ export class StorageService {
 
         if (addedCount > 0 || updatedCount > 0) {
             await this.saveAllClients(existingClients);
-            console.log(`[StorageService] Добавлено: ${addedCount}, Обновлено метаданных: ${updatedCount}`);
+            console.log(`[StorageService] Добавлено: ${addedCount}, Обновлено: ${updatedCount}`);
         }
-
         return addedCount;
     }
 
-    /**
-     * Частичное обновление клиента по id.
-     */
     async updateClient(id: string, patch: Partial<Client>): Promise<Client | null> {
         const clients = await this.getAllClients();
         const index = clients.findIndex((c) => c.id === id);
@@ -185,90 +142,58 @@ export class StorageService {
         return updated;
     }
 
-    // ====УДАЛЕНИЕ============================================
-
-    /**
-     * Удаляет клиента по-внутреннему id.
-     * Возвращает true если клиент был найден и удалён.
-     */
-    async deleteClient(id: string): Promise<boolean> {
+    async updateAiFields(updates: Array<{
+        leadId: string;
+        description: string | null;
+        aiRecommendedStatus: ClientStatus | null;
+        aiScore: number | null;
+        aiLastAnalyzedAt: string | null;
+    }>): Promise<number> {
         const clients = await this.getAllClients();
-        const filtered = clients.filter((c) => c.id !== id);
+        const clientsByLeadId = new Map(clients.filter((c) => c.leadId).map((c) => [c.leadId as string, c]));
+        let updated = 0;
 
-        if (filtered.length === clients.length) {
-            return false;
+        for (const update of updates) {
+            const client = clientsByLeadId.get(update.leadId);
+            if (!client) continue;
+
+            client.description = update.description;
+            client.aiRecommendedStatus = update.aiRecommendedStatus;
+            client.aiScore = update.aiScore;
+            client.aiLastAnalyzedAt = update.aiLastAnalyzedAt;
+            client.updatedAt = new Date().toISOString();
+            updated++;
         }
 
-        await this.saveAllClients(filtered);
-        return true;
-    }
-
-    async deleteClientByLeadId(leadId: string): Promise<boolean> {
-        const clients = await this.getAllClients();
-        const filtered = clients.filter((c) => c.leadId !== leadId);
-
-        if (filtered.length === clients.length) {
-            return false;
+        if (updated > 0) {
+            await this.saveAllClients(clients);
+            console.log(`[StorageService] ИИ-поля обновлены у ${updated} записей`);
         }
-
-        await this.saveAllClients(filtered);
-        return true;
+        return updated;
     }
 
-    /**
-     * Полная очистка хранилища клиентов.
-     */
-    async clearAll(): Promise<void> {
-        await this.saveAllClients([]);
-    }
-
-    // ====СТАТИСТИКА==========================================
-
-    /**
-     * Возвращает количество клиентов по каждому статусу.
-     * Для wild не считаем — он не хранится.
-     */
-    async getStatusCounts(): Promise<Record<ClientStatus, number>> {
-        const clients = await this.getAllClients();
-        const counts = {} as Record<ClientStatus, number>;
-
-        for (const status of Object.keys(STATUS_CONFIG) as ClientStatus[]) {
-            counts[status] = clients.filter((c) => c.status === status).length;
-        }
-
-        return counts;
-    }
-
-    /**
-     * Обогащает существующих клиентов данными (originalCompanyName, originalCompanyINN).
-     * НЕ создаёт новых клиентов.
-     */
     async enrichClients(data: EnrichmentData[]): Promise<number> {
         const existingClients = await this.getAllClients();
-        const clientsByLeadId = new Map(
-            existingClients
-                .filter((c) => c.leadId)
-                .map((c) => [c.leadId as string, c])
-        );
-
+        const clientsByLeadId = new Map(existingClients.filter((c) => c.leadId).map((c) => [c.leadId as string, c]));
         let enrichedCount = 0;
 
         for (const item of data) {
             const existing = clientsByLeadId.get(item.leadId);
-            if (!existing) continue; // <-- НЕ СОЗДАЁМ НОВЫХ
+            if (!existing) continue;
 
             let hasChanges = false;
-
             if (item.originalCompanyName && item.originalCompanyName !== existing.originalCompanyName) {
                 existing.originalCompanyName = item.originalCompanyName;
                 hasChanges = true;
             }
-
             if (item.originalCompanyINN && item.originalCompanyINN !== existing.originalCompanyINN) {
                 existing.originalCompanyINN = item.originalCompanyINN;
                 hasChanges = true;
             }
-
+            if (item.companyUrl && item.companyUrl !== existing.companyUrl) {
+                existing.companyUrl = item.companyUrl;
+                hasChanges = true;
+            }
             if (hasChanges) {
                 existing.updatedAt = new Date().toISOString();
                 enrichedCount++;
@@ -279,7 +204,41 @@ export class StorageService {
             await this.saveAllClients(existingClients);
             console.log(`[StorageService] Обогащено: ${enrichedCount} записей`);
         }
-
         return enrichedCount;
+    }
+
+    // ====УДАЛЕНИЕ============================================
+
+    async deleteClient(id: string): Promise<boolean> {
+        const clients = await this.getAllClients();
+        const filtered = clients.filter((c) => c.id !== id);
+        if (filtered.length === clients.length) return false;
+        await this.saveAllClients(filtered);
+        return true;
+    }
+
+    async deleteClientByLeadId(leadId: string): Promise<boolean> {
+        const clients = await this.getAllClients();
+        const filtered = clients.filter((c) => c.leadId !== leadId);
+        if (filtered.length === clients.length) return false;
+        await this.saveAllClients(filtered);
+        return true;
+    }
+
+    async clearAll(): Promise<void> {
+        await this.saveAllClients([]);
+    }
+
+    // ====СТАТИСТИКА==========================================
+
+    async getStatusCounts(): Promise<Record<ClientStatus, number>> {
+        const clients = await this.getAllClients();
+        const counts = {} as Record<ClientStatus, number>;
+
+        for (const status of Object.keys(STATUS_CONFIG) as ClientStatus[]) {
+            counts[status] = clients.filter((c) => c.status === status).length;
+        }
+
+        return counts;
     }
 }

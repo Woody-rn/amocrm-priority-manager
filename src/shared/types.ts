@@ -37,12 +37,21 @@ export interface Client {
     status: ClientStatus;
     leadId: string | null;
     leadUrl: string | null;
-    originalCompanyINN: string | null;
-    originalCompanyName: string | null;
+
     parserCompanyName: string | null;
+    originalCompanyName: string | null;
+    originalCompanyINN: string | null;
+    companyUrl: string | null;
     directionAndFunnel: string | null;
+
     createdAt: string;
     updatedAt: string;
+
+    // ====ИИ-ПОЛЯ====
+    description: string | null;
+    aiRecommendedStatus: ClientStatus | null;
+    aiScore: number | null;
+    aiLastAnalyzedAt: string | null;
 }
 
 // ====CHANGELOG==============================================

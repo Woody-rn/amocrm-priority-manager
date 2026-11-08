@@ -11,13 +11,9 @@ const settingsService = new SettingsService();
 
 const COLUMNS: TableColumn[] = [
     { key: 'name', label: 'Название сделки', visible: true, sortable: true },
-    {
-        key: 'leadUrl',
-        label: 'Ссылка',
-        visible: true,
-        sortable: false
-    },
-    { key: 'parserCompanyName', label: 'Компания', visible: true, sortable: true },
+    { key: 'leadUrl', label: 'Сделка', visible: true, sortable: false },
+    { key: 'companyUrl', label: 'Компания', visible: true, sortable: false }, // <-- ссылка на компанию
+    { key: 'parserCompanyName', label: 'Компания (парс.)', visible: true, sortable: true },
     { key: 'originalCompanyName', label: 'Компания (ориг.)', visible: false, sortable: true },
     {
         key: 'status',
@@ -28,6 +24,23 @@ const COLUMNS: TableColumn[] = [
     },
     { key: 'directionAndFunnel', label: 'Воронка', visible: true, sortable: true },
     { key: 'originalCompanyINN', label: 'ИНН', visible: false, sortable: true },
+    // ====ИИ-КОЛОНКИ====
+    {
+        key: 'aiScore',
+        label: 'Оценка ИИ',
+        visible: false,
+        sortable: true,
+        formatter: (c) => c.aiScore != null ? String(c.aiScore) : '—'
+    },
+    {
+        key: 'aiRecommendedStatus',
+        label: 'Рекоменд. статус',
+        visible: false,
+        sortable: true,
+        formatter: (c) => c.aiRecommendedStatus ? `${STATUS_CONFIG[c.aiRecommendedStatus]?.icon || '❓'} ${STATUS_CONFIG[c.aiRecommendedStatus]?.label}` : '—'
+    },
+    { key: 'description', label: 'Описание (ИИ)', visible: false, sortable: false },
+    // ====СЛУЖЕБНЫЕ====
     { key: 'leadId', label: 'leadId', visible: false, sortable: true },
     {
         key: 'createdAt',
@@ -124,7 +137,8 @@ export function renderTable(container: HTMLElement): void {
                     c.originalCompanyName,
                     c.leadId,
                     c.originalCompanyINN,
-                    c.directionAndFunnel
+                    c.directionAndFunnel,
+                    c.description // <-- ищем по описанию ИИ
                 ].filter(Boolean).map(String);
                 if (!fields.some((f) => f.toLowerCase().includes(query))) return false;
             }
@@ -181,9 +195,9 @@ export function renderTable(container: HTMLElement): void {
             visibleCols.forEach((col) => {
                 const td = document.createElement('td');
 
+                // Ссылка на сделку
                 if (col.key === 'leadUrl' && client.leadUrl) {
                     const a = document.createElement('a');
-                    // Безопасная склейка baseUrl и leadUrl
                     if (client.leadUrl.startsWith('http')) {
                         a.href = client.leadUrl;
                     } else {
@@ -192,11 +206,28 @@ export function renderTable(container: HTMLElement): void {
                         a.href = `${cleanBase}/${cleanPath}`;
                     }
                     a.target = '_blank';
-                    a.textContent = '🔗 Открыть';
+                    a.textContent = '🔗 Сделка';
                     a.style.color = 'var(--primary-color, #2196f3)';
                     a.style.textDecoration = 'none';
                     td.appendChild(a);
-                } else if (col.formatter) {
+                }
+                // Ссылка на компанию
+                else if (col.key === 'companyUrl' && client.companyUrl) {
+                    const a = document.createElement('a');
+                    if (client.companyUrl.startsWith('http')) {
+                        a.href = client.companyUrl;
+                    } else {
+                        const cleanBase = baseUrl.replace(/\/+$/, '');
+                        const cleanPath = client.companyUrl.replace(/^\/+/, '');
+                        a.href = `${cleanBase}/${cleanPath}`;
+                    }
+                    a.target = '_blank';
+                    a.textContent = '🏢 Компания';
+                    a.style.color = 'var(--primary-color, #2196f3)';
+                    a.style.textDecoration = 'none';
+                    td.appendChild(a);
+                }
+                else if (col.formatter) {
                     const result = col.formatter(client);
                     if (result instanceof HTMLElement) {
                         td.appendChild(result);
