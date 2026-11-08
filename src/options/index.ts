@@ -258,18 +258,18 @@ class OptionsApp {
                 uploadBtn.disabled = false;
 
                 // Скрываем "Подключить", показываем "Открыть" и "Отключить"
-                connectBtn.style.display = 'none';
-                if (openCloudBtn) openCloudBtn.style.display = 'inline-flex';
-                if (disconnectBtn) disconnectBtn.style.display = 'inline-flex';
+                connectBtn.classList.add('is-hidden');
+                if (openCloudBtn) openCloudBtn.classList.remove('is-hidden');
+                if (disconnectBtn) disconnectBtn.classList.remove('is-hidden');
             } else {
                 statusEl.textContent = '⚪ Не подключено';
                 statusEl.style.color = 'var(--text-muted, #666)';
                 uploadBtn.disabled = true;
 
                 // Показываем "Подключить", скрываем остальные
-                connectBtn.style.display = 'inline-flex';
-                if (openCloudBtn) openCloudBtn.style.display = 'none';
-                if (disconnectBtn) disconnectBtn.style.display = 'none';
+                connectBtn.classList.remove('is-hidden');
+                if (openCloudBtn) openCloudBtn.classList.add('is-hidden');
+                if (disconnectBtn) disconnectBtn.classList.add('is-hidden');
 
                 backupsEl.innerHTML = '<div class="cloud-empty">Подключитесь к Яндекс.Диску, чтобы увидеть бэкапы.</div>';
                 return;

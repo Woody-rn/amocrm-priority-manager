@@ -28,7 +28,7 @@
         <section class="options-panel" id="tab-analytics">
             <div class="options-card">
                 <h2>Распределение клиентов по статусам</h2>
-                <div class="chart-container" id="statsChartContainer" style="position: relative; height: 400px;"></div>
+                <div class="chart-container" id="statsChartContainer"></div>
             </div>
 
             <div class="options-card">
@@ -59,7 +59,7 @@
                             </select>
                         </div>
                     </div>
-                    <button id="saveSettingsBtn" class="btn btn-primary" style="margin-top: 16px;">Сохранить настройки</button>
+                    <button id="saveSettingsBtn" class="btn btn-primary btn-mt-16">Сохранить настройки</button>
                 </div>
 
                 <!-- Блок 2: Отладка и Резервное копирование -->
@@ -74,14 +74,14 @@
                                 </label>
                                 <small>Логи будут копиться в расширении.</small>
                             </div>
-                            <div class="options-actions" style="margin-top: 12px;">
+                            <div class="options-actions btn-mt-12">
                                 <button id="downloadDiagLogBtn" class="btn">📥 Скачать лог</button>
                                 <button id="clearDiagLogBtn" class="btn btn-danger">🗑 Очистить лог</button>
                             </div>
                         </div>
                         <div class="settings-column">
                             <h3>Резервное копирование</h3>
-                            <div class="options-actions" style="margin-top: 12px;">
+                            <div class="options-actions btn-mt-12">
                                 <button id="exportBtn" class="btn">📤 Экспорт JSON</button>
                                 <button id="importBtn" class="btn">📥 Импорт JSON</button>
                                 <input type="file" id="importFile" accept=".json" hidden>
@@ -95,8 +95,8 @@
                     <h2>☁️ Синхронизация с Яндекс.Диском</h2>
                     <div class="cloud-controls">
                         <button id="cloudConnectBtn" class="btn">🔗 Подключить</button>
-                        <a id="cloudOpenBtn" href="https://disk.yandex.ru/client/disk/amo-backups" target="_blank" class="btn" style="display: none; text-decoration: none;">🌐 Открыть Диск</a>
-                        <button id="cloudDisconnectBtn" class="btn btn-danger" style="display: none;">🚪 Отключить</button>
+                        <a id="cloudOpenBtn" href="https://disk.yandex.ru/client/disk/amo-backups" target="_blank" class="btn is-hidden">🌐 Открыть Диск</a>
+                        <button id="cloudDisconnectBtn" class="btn btn-danger is-hidden">🚪 Отключить</button>
                         <button id="cloudUploadBtn" class="btn btn-primary" disabled>💾 Сохранить в облако</button>
                     </div>
                     <div class="cloud-status" id="cloudStatus">⚪ Не подключено</div>
@@ -105,8 +105,8 @@
                 </div>
 
                 <!-- Блок 4: Опасная зона -->
-                <div class="options-card" style="border: 1px solid rgba(244, 67, 54, 0.2);">
-                    <h2 style="color: var(--danger-color);">⚠️ Опасная зона</h2>
+                <div class="options-card card-danger">
+                    <h2 class="text-danger">⚠️ Опасная зона</h2>
                     <div class="options-actions">
                         <button id="clearAllBtn" class="btn btn-danger">🗑 Очистить все данные</button>
                     </div>
@@ -116,7 +116,6 @@
 
         <!-- Функционал -->
         <section class="options-panel" id="tab-features" style="display: none;">
-            <!-- Контейнер прозрачный, карточки будут внутри -->
             <div id="featuresContainer" class="help-container"></div>
         </section>
 

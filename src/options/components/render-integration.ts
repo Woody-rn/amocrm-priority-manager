@@ -13,7 +13,7 @@ export function renderIntegration(container: HTMLElement): void {
         <h2>🗺 ${t('integrationPagesTitle')}</h2>
         <p class="help-tech-intro">${t('integrationPagesIntro')}</p>
 
-        <div class="help-tech-item" style="border-left-color: #4caf50;">
+        <div class="help-tech-item help-tech-item--success">
             <div class="help-tech-header">${t('integrationPageTodo')}</div>
             <div class="help-tech-desc">
                 ${t('integrationPageTodoDesc')}
@@ -21,7 +21,7 @@ export function renderIntegration(container: HTMLElement): void {
                 <strong>Селектор:</strong>
                 <code class="help-tech-code">${SELECTORS.todo}</code>
                 <br>
-                <span style="font-size: 12px; color: var(--text-light, #888);">
+                <span class="help-tech-small-text">
                     ${t('integrationSelectorTodoDesc')}
                 </span>
                 <br><br>
@@ -29,7 +29,7 @@ export function renderIntegration(container: HTMLElement): void {
             </div>
         </div>
 
-        <div class="help-tech-item" style="border-left-color: #2196f3;">
+        <div class="help-tech-item help-tech-item--info">
             <div class="help-tech-header">${t('integrationPageDetail')}</div>
             <div class="help-tech-desc">
                 ${t('integrationPageDetailDesc')}
@@ -37,7 +37,7 @@ export function renderIntegration(container: HTMLElement): void {
                 <strong>Селектор:</strong>
                 <code class="help-tech-code">${SELECTORS.leadsDetail}</code>
                 <br>
-                <span style="font-size: 12px; color: var(--text-light, #888);">
+                <span class="help-tech-small-text">
                     ${t('integrationSelectorDetailDesc')}
                 </span>
                 <br><br>
@@ -45,7 +45,7 @@ export function renderIntegration(container: HTMLElement): void {
             </div>
         </div>
 
-        <div class="help-tech-item" style="border-left-color: #ff9800;">
+        <div class="help-tech-item help-tech-item--warning">
             <div class="help-tech-header">${t('integrationPageLeadsList')}</div>
             <div class="help-tech-desc">
                 ${t('integrationPageLeadsListDesc')}
@@ -53,7 +53,7 @@ export function renderIntegration(container: HTMLElement): void {
                 <strong>Селектор:</strong>
                 <code class="help-tech-code">${SELECTORS.leadsList}</code>
                 <br>
-                <span style="font-size: 12px; color: var(--text-light, #888);">
+                <span class="help-tech-small-text">
                     ${t('integrationSelectorTodoDesc')}
                 </span>
                 <br><br>
@@ -61,7 +61,7 @@ export function renderIntegration(container: HTMLElement): void {
             </div>
         </div>
 
-        <div class="help-tech-note" style="margin-top: 16px; border-left: 3px solid var(--primary-color, #2196f3);">
+        <div class="help-tech-note help-tech-item--info">
             <strong>${t('integrationLeadIdNote')}</strong>
         </div>
     `;
@@ -75,20 +75,20 @@ export function renderIntegration(container: HTMLElement): void {
         <h2>⚙️ ${t('integrationRequirementsTitle')}</h2>
         <p class="help-tech-intro">${t('integrationRequirementsIntro')}</p>
 
-        <div class="help-tech-item" style="border-left-color: #4caf50;">
+        <div class="help-tech-item help-tech-item--success">
             <div class="help-tech-header">${t('integrationReqTodoTitle')}</div>
             <div class="help-tech-desc">
-                <ul style="margin: 8px 0; padding-left: 20px;">
+                <ul class="help-tech-list-ul">
                     <li>${t('integrationReqTodoObject')}</li>
                     <li>${t('integrationReqTodoFunnel')}</li>
                 </ul>
             </div>
         </div>
 
-        <div class="help-tech-item" style="border-left-color: #ff9800;">
+        <div class="help-tech-item help-tech-item--warning">
             <div class="help-tech-header">${t('integrationReqListTitle')}</div>
             <div class="help-tech-desc">
-                <ul style="margin: 8px 0; padding-left: 20px;">
+                <ul class="help-tech-list-ul">
                     <li>${t('integrationReqListName')}</li>
                     <li>${t('integrationReqListCompany')}</li>
                     <li>${t('integrationReqListINN')}</li>
@@ -107,7 +107,7 @@ export function renderIntegration(container: HTMLElement): void {
         <p class="help-tech-intro">${t('integrationLifecycleIntro')}</p>
         <div class="help-logic">
             <div class="help-logic-block">
-                <ol style="margin: 0; padding-left: 20px;">
+                <ol class="help-tech-list-ul">
                     <li>${t('integrationStep1')}</li>
                     <li>${t('integrationStep2')}</li>
                     <li>${t('integrationStep3')}</li>
@@ -126,19 +126,19 @@ export function renderIntegration(container: HTMLElement): void {
     failuresSection.innerHTML = `
         <h2>⚠️ ${t('integrationFailuresTitle')}</h2>
         <div class="help-tech-list">
-            <div class="help-tech-item" style="border-left-color: #f44336;">
+            <div class="help-tech-item help-tech-item--danger">
                 <div class="help-tech-header">${t('integrationFailSpinner')}</div>
                 <div class="help-tech-desc">${t('integrationFailSpinnerDesc')}</div>
             </div>
-            <div class="help-tech-item" style="border-left-color: #f44336;">
+            <div class="help-tech-item help-tech-item--danger">
                 <div class="help-tech-header">${t('integrationFailSelectors')}</div>
                 <div class="help-tech-desc">${t('integrationFailSelectorsDesc')}</div>
             </div>
-            <div class="help-tech-item" style="border-left-color: #f44336;">
+            <div class="help-tech-item help-tech-item--danger">
                 <div class="help-tech-header">${t('integrationFailContainer')}</div>
                 <div class="help-tech-desc">${t('integrationFailContainerDesc')}</div>
             </div>
-            <div class="help-tech-item" style="border-left-color: #f44336;">
+            <div class="help-tech-item help-tech-item--danger">
                 <div class="help-tech-header">${t('integrationFailTitle')}</div>
                 <div class="help-tech-desc">${t('integrationFailTitleDesc')}</div>
             </div>
@@ -152,7 +152,7 @@ export function renderIntegration(container: HTMLElement): void {
 
     diagSection.innerHTML = `
         <h2>🛠 ${t('integrationDiagTitle')}</h2>
-        <div class="help-tech-item" style="border-left-color: #9c27b0;">
+        <div class="help-tech-item help-tech-item--purple">
             <div class="help-tech-desc">
                 ${t('integrationDiagDesc')}
             </div>
