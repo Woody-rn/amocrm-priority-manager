@@ -84,7 +84,8 @@ function renderClientItem(
     name.title = client.name;
 
     if (searchQuery.trim()) {
-        name.innerHTML = highlightText(client.name, searchQuery);
+        // ИСПРАВЛЕНО: Сначала экранируем потенциально опасный HTML, затем подсвечиваем совпадения
+        name.innerHTML = highlightText(escapeHtml(client.name), escapeHtml(searchQuery));
     } else {
         name.textContent = client.name;
     }
@@ -141,7 +142,7 @@ function renderClientItem(
         // Добавляем класс, который запускает CSS-анимацию
         item.classList.add('client-item--deleting');
 
-        // По завершении анимации (2 сек) удаляем
+        // По завершении анимации (1.2 сек) удаляем
         holdTimeout = setTimeout(() => {
             if (isHolding) {
                 isHolding = false;
@@ -167,11 +168,34 @@ function renderClientItem(
     return item;
 }
 
+// ====ESCAPE HTML============================================
+
+/**
+ * Преобразует опасные символы в HTML-сущности, чтобы предотвратить XSS.
+ * Например, '<' становится '&lt;'.
+ */
+function escapeHtml(str: string): string {
+    return str.replace(/[&<>"']/g, (match) => {
+        const map: Record<string, string> = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return map[match];
+    });
+}
+
 // ====HIGHLIGHT==============================================
 
 function highlightText(text: string, query: string): string {
     if (!query.trim()) return text;
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escaped})`, 'gi');
+
+    // Экранируем спецсимволы регулярного выражения в запросе
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
+
+    // Возвращаем текст с обернутыми совпадениями
     return text.replace(regex, '<span class="highlight">$1</span>');
 }
