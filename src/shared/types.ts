@@ -64,7 +64,6 @@ export interface ChangelogCache {
 
 export interface ChangelogVersion {
     version: string;
-    date: string;
     changes: string[];
 }
 

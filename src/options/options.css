@@ -555,6 +555,7 @@ body {
     gap: 12px;
     margin-bottom: 12px;
     flex-wrap: wrap;
+    position: relative; /* Для позиционирования меню */
 }
 
 .table-search {
@@ -579,32 +580,84 @@ body {
     color: var(--text-main, #333);
 }
 
-.table-columns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--bg-body, #f9f9f9);
+/* Кнопка и выпадающее меню колонок */
+.table-columns-btn {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    background: var(--bg-card, #fff);
+    color: var(--text-main, #333);
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.table-columns-btn:hover {
+    background: var(--bg-hover, #f0f0f0);
+}
+
+.table-columns-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #ddd);
     border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 12px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 220px;
+}
+
+.table-columns-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 8px; /* Отступ снизу для группы */
+    border-bottom: 1px solid var(--border-color, #eee); /* Разделитель между группами */
+}
+
+.table-columns-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.table-columns-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-light, #999);
+    margin-top: 8px; /* Отступ сверху для заголовка */
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
 }
 
 .table-column-toggle {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     font-size: 13px;
     cursor: pointer;
     user-select: none;
+    padding: 2px 0;
 }
 
 .table-column-toggle input {
     margin: 0;
     cursor: pointer;
+    accent-color: var(--primary-color, #2196f3);
 }
 
+/* Контейнер таблицы с фиксированной высотой и своим скроллом */
 .table-wrapper {
-    overflow-x: auto;
+    overflow: auto; /* Включает и вертикальный, и горизонтальный скролл */
+    max-height: calc(100vh - 300px); /* Высота таблицы: экран минус шапка настроек и панель фильтров */
+    min-height: 300px;
     border: 1px solid var(--border-color, #eee);
     border-radius: 8px;
 }
@@ -634,6 +687,7 @@ body {
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-color, #f0f0f0);
     color: var(--text-muted, #555);
+    vertical-align: middle;
 }
 
 .data-table tbody tr:hover {
@@ -642,4 +696,16 @@ body {
 
 .data-table tbody tr:last-child td {
     border-bottom: none;
+}
+
+/* Иконки ссылок в таблице */
+.table-link-icon {
+    text-decoration: none;
+    font-size: 16px;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.table-link-icon:hover {
+    transform: scale(1.2);
 }

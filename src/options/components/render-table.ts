@@ -10,50 +10,35 @@ const settingsService = new SettingsService();
 // ====КОНФИГУРАЦИЯ КОЛОНОК===================================
 
 const COLUMNS: TableColumn[] = [
-    { key: 'name', label: 'Название сделки', visible: true, sortable: true },
-    { key: 'leadUrl', label: 'Сделка', visible: true, sortable: false },
-    { key: 'companyUrl', label: 'Компания', visible: true, sortable: false }, // <-- ссылка на компанию
-    { key: 'parserCompanyName', label: 'Компания (парс.)', visible: true, sortable: true },
-    { key: 'originalCompanyName', label: 'Компания (ориг.)', visible: false, sortable: true },
-    {
-        key: 'status',
-        label: 'Статус',
-        visible: true,
-        sortable: true,
+    // Основные
+    { key: 'name', label: 'Название', visible: true, sortable: true },
+    { key: 'status', label: 'Статус', visible: true, sortable: true,
         formatter: (c) => `${STATUS_CONFIG[c.status]?.icon || '❓'} ${STATUS_CONFIG[c.status]?.label || c.status}`
     },
     { key: 'directionAndFunnel', label: 'Воронка', visible: true, sortable: true },
-    { key: 'originalCompanyINN', label: 'ИНН', visible: false, sortable: true },
-    // ====ИИ-КОЛОНКИ====
-    {
-        key: 'aiScore',
-        label: 'Оценка ИИ',
-        visible: false,
-        sortable: true,
-        formatter: (c) => c.aiScore != null ? String(c.aiScore) : '—'
+
+    // Компания
+    { key: 'companyUrl', label: 'Компания', visible: true, sortable: false },
+    { key: 'parserCompanyName', label: 'Компания (парс.)', visible: true, sortable: true },
+    { key: 'originalCompanyName', label: 'Компания (ориг.)', visible: false, sortable: true },
+    { key: 'originalCompanyINN', label: 'ИНН', visible: true, sortable: true },
+
+    // Ссылки и ИИ
+    { key: 'leadUrl', label: 'Сделка', visible: true, sortable: false },
+    { key: 'aiScore', label: 'Оценка ИИ', visible: false, sortable: true,
+        formatter: (c) => c.aiScore != null ? String(c.aiScore) : ''
     },
-    {
-        key: 'aiRecommendedStatus',
-        label: 'Рекоменд. статус',
-        visible: false,
-        sortable: true,
-        formatter: (c) => c.aiRecommendedStatus ? `${STATUS_CONFIG[c.aiRecommendedStatus]?.icon || '❓'} ${STATUS_CONFIG[c.aiRecommendedStatus]?.label}` : '—'
+    { key: 'aiRecommendedStatus', label: 'Рекоменд. статус', visible: false, sortable: true,
+        formatter: (c) => c.aiRecommendedStatus ? `${STATUS_CONFIG[c.aiRecommendedStatus]?.icon || ''} ${STATUS_CONFIG[c.aiRecommendedStatus]?.label}` : ''
     },
     { key: 'description', label: 'Описание (ИИ)', visible: false, sortable: false },
-    // ====СЛУЖЕБНЫЕ====
+
+    // Служебные
     { key: 'leadId', label: 'leadId', visible: false, sortable: true },
-    {
-        key: 'createdAt',
-        label: 'Создана',
-        visible: false,
-        sortable: true,
+    { key: 'createdAt', label: 'Создана', visible: false, sortable: true,
         formatter: (c) => new Date(c.createdAt).toLocaleDateString('ru-RU')
     },
-    {
-        key: 'updatedAt',
-        label: 'Обновлена',
-        visible: false,
-        sortable: true,
+    { key: 'updatedAt', label: 'Обновлена', visible: false, sortable: true,
         formatter: (c) => new Date(c.updatedAt).toLocaleDateString('ru-RU')
     }
 ];
@@ -65,7 +50,7 @@ export function renderTable(container: HTMLElement): void {
 
     let baseUrl = '';
 
-    // 1. Панель управления
+    // 1. Панель управления (Поиск, Статус, Кнопка колонок)
     const controls = document.createElement('div');
     controls.className = 'table-controls';
 
@@ -81,36 +66,79 @@ export function renderTable(container: HTMLElement): void {
             `<option value="${key}">${cfg.icon} ${cfg.label}</option>`
         ).join('');
 
-    controls.appendChild(searchInput);
-    controls.appendChild(statusFilter);
-    container.appendChild(controls);
+    // Кнопка "Настройка колонок" и выпадающее меню
+    const columnsBtn = document.createElement('button');
+    columnsBtn.className = 'table-columns-btn';
+    columnsBtn.textContent = '⚙️ Колонки';
 
-    // 2. Панель колонок
-    const columnsPanel = document.createElement('div');
-    columnsPanel.className = 'table-columns';
+    const columnsDropdown = document.createElement('div');
+    columnsDropdown.className = 'table-columns-dropdown';
+    columnsDropdown.style.display = 'none'; // Скрыто по умолчанию
 
-    COLUMNS.forEach((col) => {
-        const label = document.createElement('label');
-        label.className = 'table-column-toggle';
+    // Группировка колонок
+    const groups = [
+        { title: 'Основные', keys: ['name', 'status', 'directionAndFunnel'] },
+        { title: 'Компания', keys: ['companyUrl', 'parserCompanyName', 'originalCompanyName', 'originalCompanyINN'] },
+        { title: 'Ссылки и ИИ', keys: ['leadUrl', 'aiScore', 'aiRecommendedStatus', 'description'] },
+        { title: 'Служебные', keys: ['leadId', 'createdAt', 'updatedAt'] }
+    ];
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = col.visible;
-        checkbox.dataset.key = col.key;
+    groups.forEach(group => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'table-columns-group';
 
-        checkbox.addEventListener('change', () => {
-            col.visible = checkbox.checked;
-            void saveTableSettings();
-            updateTable();
+        const title = document.createElement('div');
+        title.className = 'table-columns-group-title';
+        title.textContent = group.title;
+        groupDiv.appendChild(title);
+
+        group.keys.forEach(key => {
+            const col = COLUMNS.find(c => c.key === key);
+            if (!col) return;
+
+            const label = document.createElement('label');
+            label.className = 'table-column-toggle';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = col.visible;
+            checkbox.dataset.key = col.key;
+
+            checkbox.addEventListener('change', () => {
+                col.visible = checkbox.checked;
+                void saveTableSettings();
+                updateTable();
+            });
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ${col.label}`));
+            groupDiv.appendChild(label);
         });
 
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(` ${col.label}`));
-        columnsPanel.appendChild(label);
+        columnsDropdown.appendChild(groupDiv);
     });
-    container.appendChild(columnsPanel);
 
-    // 3. Таблица
+    // Обработчик клика по кнопке (показать/скрыть)
+    columnsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        columnsDropdown.style.display = columnsDropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Закрытие при клике вне меню
+    document.addEventListener('click', (e) => {
+        if (!(e.target as HTMLElement).closest('.table-columns-btn') &&
+            !(e.target as HTMLElement).closest('.table-columns-dropdown')) {
+            columnsDropdown.style.display = 'none';
+        }
+    });
+
+    controls.appendChild(searchInput);
+    controls.appendChild(statusFilter);
+    controls.appendChild(columnsBtn);
+    controls.appendChild(columnsDropdown);
+    container.appendChild(controls);
+
+    // 2. Таблица
     const tableWrapper = document.createElement('div');
     tableWrapper.className = 'table-wrapper';
     const table = document.createElement('table');
@@ -118,7 +146,7 @@ export function renderTable(container: HTMLElement): void {
     tableWrapper.appendChild(table);
     container.appendChild(tableWrapper);
 
-    // 4. Данные
+    // 3. Данные
     let allClients: Client[] = [];
     let filteredClients: Client[] = [];
     let sortKey: keyof Client | null = null;
@@ -132,13 +160,8 @@ export function renderTable(container: HTMLElement): void {
             if (status && c.status !== status) return false;
             if (query) {
                 const fields = [
-                    c.name,
-                    c.parserCompanyName,
-                    c.originalCompanyName,
-                    c.leadId,
-                    c.originalCompanyINN,
-                    c.directionAndFunnel,
-                    c.description // <-- ищем по описанию ИИ
+                    c.name, c.parserCompanyName, c.originalCompanyName,
+                    c.leadId, c.originalCompanyINN, c.directionAndFunnel, c.description
                 ].filter(Boolean).map(String);
                 if (!fields.some((f) => f.toLowerCase().includes(query))) return false;
             }
@@ -195,36 +218,26 @@ export function renderTable(container: HTMLElement): void {
             visibleCols.forEach((col) => {
                 const td = document.createElement('td');
 
-                // Ссылка на сделку
                 if (col.key === 'leadUrl' && client.leadUrl) {
                     const a = document.createElement('a');
-                    if (client.leadUrl.startsWith('http')) {
-                        a.href = client.leadUrl;
-                    } else {
-                        const cleanBase = baseUrl.replace(/\/+$/, '');
-                        const cleanPath = client.leadUrl.replace(/^\/+/, '');
-                        a.href = `${cleanBase}/${cleanPath}`;
-                    }
+                    const cleanBase = baseUrl.replace(/\/+$/, '');
+                    const cleanPath = client.leadUrl.replace(/^\/+/, '');
+                    a.href = client.leadUrl.startsWith('http') ? client.leadUrl : `${cleanBase}/${cleanPath}`;
                     a.target = '_blank';
-                    a.textContent = '🔗 Сделка';
-                    a.style.color = 'var(--primary-color, #2196f3)';
-                    a.style.textDecoration = 'none';
+                    a.textContent = '🔗';
+                    a.title = 'Открыть сделку';
+                    a.className = 'table-link-icon';
                     td.appendChild(a);
                 }
-                // Ссылка на компанию
                 else if (col.key === 'companyUrl' && client.companyUrl) {
                     const a = document.createElement('a');
-                    if (client.companyUrl.startsWith('http')) {
-                        a.href = client.companyUrl;
-                    } else {
-                        const cleanBase = baseUrl.replace(/\/+$/, '');
-                        const cleanPath = client.companyUrl.replace(/^\/+/, '');
-                        a.href = `${cleanBase}/${cleanPath}`;
-                    }
+                    const cleanBase = baseUrl.replace(/\/+$/, '');
+                    const cleanPath = client.companyUrl.replace(/^\/+/, '');
+                    a.href = client.companyUrl.startsWith('http') ? client.companyUrl : `${cleanBase}/${cleanPath}`;
                     a.target = '_blank';
-                    a.textContent = '🏢 Компания';
-                    a.style.color = 'var(--primary-color, #2196f3)';
-                    a.style.textDecoration = 'none';
+                    a.textContent = '🏢';
+                    a.title = 'Открыть компанию';
+                    a.className = 'table-link-icon';
                     td.appendChild(a);
                 }
                 else if (col.formatter) {
@@ -236,7 +249,7 @@ export function renderTable(container: HTMLElement): void {
                     }
                 } else {
                     const value = client[col.key as keyof Client];
-                    td.textContent = value == null ? '—' : String(value);
+                    td.textContent = value == null ? '' : String(value);
                 }
                 row.appendChild(td);
             });
@@ -245,7 +258,7 @@ export function renderTable(container: HTMLElement): void {
         table.appendChild(tbody);
     };
 
-    // 5. Загрузка данных
+    // 4. Загрузка данных
     const load = async () => {
         const settings = await settingsService.getSettings();
         baseUrl = settings.baseUrl || '';
@@ -275,6 +288,11 @@ export async function loadTableSettings(): Promise<void> {
 
     const visible = new Set(settings.visibleColumns);
     COLUMNS.forEach((c) => {
-        c.visible = visible.has(c.key as string);
+        const key = c.key as string;
+        if (visible.has(key)) {
+            c.visible = true;
+        } else if (settings.visibleColumns.includes(key)) {
+            c.visible = false;
+        }
     });
 }
