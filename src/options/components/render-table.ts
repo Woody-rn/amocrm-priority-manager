@@ -7,6 +7,10 @@ import { SettingsService } from '../../shared/settings';
 const storage = new StorageService();
 const settingsService = new SettingsService();
 
+// Глобальная переменная для хранения ссылки на обработчике клика вне меню,
+// чтобы предотвратить утечку памяти при повторных вызовах renderTable.
+let globalOutsideClickHandler: ((e: MouseEvent) => void) | null = null;
+
 // ====КОНФИГУРАЦИЯ КОЛОНОК===================================
 
 const COLUMNS: TableColumn[] = [
@@ -28,7 +32,7 @@ const COLUMNS: TableColumn[] = [
     { key: 'aiScore', label: 'Оценка ИИ', visible: false, sortable: true,
         formatter: (c) => c.aiScore != null ? String(c.aiScore) : ''
     },
-    { key: 'aiRecommendedStatus', label: 'Рекоменд. статус', visible: false, sortable: true,
+    { key: 'aiRecommendedStatus', label: 'Рекомендуемый. статус', visible: false, sortable: true,
         formatter: (c) => c.aiRecommendedStatus ? `${STATUS_CONFIG[c.aiRecommendedStatus]?.icon || ''} ${STATUS_CONFIG[c.aiRecommendedStatus]?.label}` : ''
     },
     { key: 'description', label: 'Описание (ИИ)', visible: false, sortable: false },
@@ -124,13 +128,19 @@ export function renderTable(container: HTMLElement): void {
         columnsDropdown.style.display = columnsDropdown.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Закрытие при клике вне меню
-    document.addEventListener('click', (e) => {
+    // ЗАЩИТА ОТ УТЕЧКИ ПАМЯТИ: удаляем старый обработчик перед добавлением нового
+    if (globalOutsideClickHandler) {
+        document.removeEventListener('click', globalOutsideClickHandler);
+    }
+
+    globalOutsideClickHandler = (e: MouseEvent) => {
         if (!(e.target as HTMLElement).closest('.table-columns-btn') &&
             !(e.target as HTMLElement).closest('.table-columns-dropdown')) {
             columnsDropdown.style.display = 'none';
         }
-    });
+    };
+
+    document.addEventListener('click', globalOutsideClickHandler);
 
     controls.appendChild(searchInput);
     controls.appendChild(statusFilter);
