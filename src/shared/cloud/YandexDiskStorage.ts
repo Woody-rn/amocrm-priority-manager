@@ -153,4 +153,17 @@ export class YandexDiskStorage implements ICloudStorage {
 
         return await downloadResponse.text();
     }
+
+    async delete(path: string): Promise<void> {
+        if (!this.token) throw new Error('Нет авторизации');
+
+        const response = await fetch(`${API_URL}/resources?path=${encodeURIComponent(path)}`, {
+            method: 'DELETE',
+            headers: { Authorization: `OAuth ${this.token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Не удалось удалить файл');
+        }
+    }
 }

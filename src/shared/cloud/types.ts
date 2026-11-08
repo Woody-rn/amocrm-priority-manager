@@ -16,4 +16,6 @@ export interface ICloudStorage {
     upload(data: string, filename: string): Promise<void>;
     listBackups(): Promise<CloudFile[]>;
     download(path: string): Promise<string | null>;
+
+    delete(path: string): Promise<void>;
 }

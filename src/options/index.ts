@@ -3,13 +3,13 @@ import { StorageService } from '../shared/storage';
 import { SettingsService, type Theme } from '../shared/settings';
 import { STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
 import { applyTheme } from '../shared/utils/theme';
-import type { Client, ChangelogData } from '../shared/types';
+import type { ChangelogData, Client } from '../shared/types';
 import { renderFeatures } from './components/render-features';
 import { renderIntegration } from './components/render-integration';
 import { renderHistory } from './components/render-history';
 import { YandexDiskStorage } from '../shared/cloud/YandexDiskStorage';
 import { DiagnosticsService } from '../shared/diagnostics';
-import { renderTable, loadTableSettings } from './components/render-table';
+import { loadTableSettings, renderTable } from './components/render-table';
 
 class OptionsApp {
     private storage = new StorageService();
@@ -196,6 +196,8 @@ class OptionsApp {
     private async setupCloud(): Promise<void> {
         const connectBtn = document.getElementById('cloudConnectBtn') as HTMLButtonElement;
         const uploadBtn = document.getElementById('cloudUploadBtn') as HTMLButtonElement;
+        const openCloudBtn = document.getElementById('cloudOpenBtn') as HTMLAnchorElement;
+        const disconnectBtn = document.getElementById('cloudDisconnectBtn') as HTMLButtonElement;
         const statusEl = document.getElementById('cloudStatus');
         const backupsEl = document.getElementById('cloudBackups');
 
@@ -216,14 +218,29 @@ class OptionsApp {
                     <div class="cloud-backup-item">
                         <span class="cloud-backup-name">${f.name}</span>
                         <span class="cloud-backup-date">${new Date(f.modified).toLocaleString('ru-RU')}</span>
-                        <button data-path="${f.path}" class="btn-small">📥 Восстановить</button>
+                        <button data-path="${f.path}" class="btn-small restore-btn">📥 Восстановить</button>
+                        <button data-path="${f.path}" class="btn-small delete-btn" title="Удалить бэкап">🗑</button>
                     </div>
                 `).join('');
 
-                backupsEl.querySelectorAll('button').forEach(btn => {
+                backupsEl.querySelectorAll('.restore-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         const path = (e.target as HTMLElement).dataset.path;
                         if (path) await this.restoreBackup(path);
+                    });
+                });
+
+                backupsEl.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const path = (e.target as HTMLElement).dataset.path;
+                        if (path && confirm('Удалить этот бэкап?')) {
+                            try {
+                                await this.cloudStorage.delete(path);
+                                await renderBackups();
+                            } catch (err) {
+                                alert('Ошибка удаления: ' + (err as Error).message);
+                            }
+                        }
                     });
                 });
             } catch (e) {
@@ -239,10 +256,21 @@ class OptionsApp {
                 statusEl.textContent = '🟢 Подключено';
                 statusEl.style.color = 'var(--success-color, #4caf50)';
                 uploadBtn.disabled = false;
+
+                // Скрываем "Подключить", показываем "Открыть" и "Отключить"
+                connectBtn.style.display = 'none';
+                if (openCloudBtn) openCloudBtn.style.display = 'inline-flex';
+                if (disconnectBtn) disconnectBtn.style.display = 'inline-flex';
             } else {
                 statusEl.textContent = '⚪ Не подключено';
                 statusEl.style.color = 'var(--text-muted, #666)';
                 uploadBtn.disabled = true;
+
+                // Показываем "Подключить", скрываем остальные
+                connectBtn.style.display = 'inline-flex';
+                if (openCloudBtn) openCloudBtn.style.display = 'none';
+                if (disconnectBtn) disconnectBtn.style.display = 'none';
+
                 backupsEl.innerHTML = '<div class="cloud-empty">Подключитесь к Яндекс.Диску, чтобы увидеть бэкапы.</div>';
                 return;
             }
@@ -262,6 +290,15 @@ class OptionsApp {
                 backupsEl.innerHTML = '<div class="cloud-error">⚠️ Не удалось авторизоваться. Проверьте настройки приложения в Яндекс OAuth.</div>';
             }
         });
+
+        // Обработчик кнопки "Отключить"
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', async () => {
+                if (!confirm('Отключить синхронизацию с Яндекс.Диском?')) return;
+                await this.cloudStorage.disconnect();
+                await updateUI();
+            });
+        }
 
         uploadBtn.addEventListener('click', async () => {
             try {

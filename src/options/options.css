@@ -102,9 +102,15 @@ body {
     color: var(--text-main, #333);
 }
 
-/* ====FIELDS================================================= */
-.options-field {
-    margin-bottom: 24px;
+/* ====FIELDS (Сетка для настроек)============================ */
+#tab-settings .options-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Расстояние между блоками */
+}
+
+#tab-settings .options-field {
+    margin-bottom: 0;
 }
 
 .options-field > label {
@@ -117,7 +123,6 @@ body {
 .options-field input[type="text"],
 .options-field select {
     width: 100%;
-    max-width: 400px;
     padding: 10px;
     border: 1px solid var(--border-color, #ddd);
     border-radius: 6px;
@@ -125,6 +130,7 @@ body {
     font-family: inherit;
     background: var(--bg-card, #fff);
     color: var(--text-main, #333);
+    box-sizing: border-box;
 }
 
 .options-field input[type="text"]:focus,
@@ -160,9 +166,35 @@ body {
     margin: 0;
 }
 
+/* Сетка для двух колонок (Домен + Тема) */
+.settings-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .settings-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Колонки в настройках */
+.settings-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.settings-column h3 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-main, #333);
+}
+
 /* ====BUTTONS================================================ */
 .btn {
-    padding: 10px 16px;
+    padding: 8px 16px;
     border: 1px solid var(--border-color, #ddd);
     border-radius: 6px;
     background: var(--bg-card, #fff);
@@ -171,6 +203,10 @@ body {
     font-size: 14px;
     font-family: inherit;
     transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .btn:hover {
@@ -199,14 +235,14 @@ body {
 
 .options-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 24px;
+    margin-bottom: 0;
 }
 
 /* Стили для разделителя (hr) */
 .options-card hr {
-    margin: 32px 0;
+    margin: 0;
     border: none;
     border-top: 1px solid var(--border-color, #eee);
 }
@@ -227,7 +263,6 @@ body {
 
 /* ====CLOUD SYNC============================================= */
 .cloud-section {
-    margin-top: 32px;
     padding-top: 24px;
     border-top: 1px solid var(--border-color, #eee);
 }
@@ -236,6 +271,7 @@ body {
     display: flex;
     gap: 12px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .cloud-status {
@@ -281,13 +317,24 @@ body {
     border-radius: 4px;
     background: var(--bg-card, #fff);
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .btn-small:hover {
     background: var(--bg-hover, #f0f0f0);
 }
 
-/* Заглушка, если нет бэкапов */
+/* Стили для кнопки удаления бэкапа */
+.cloud-backup-item .delete-btn {
+    border-color: rgba(244, 67, 54, 0.2);
+    background: rgba(244, 67, 54, 0.05);
+}
+
+.cloud-backup-item .delete-btn:hover {
+    background: rgba(244, 67, 54, 0.1);
+    border-color: var(--danger-color, #f44336);
+}
+
 .cloud-empty {
     display: flex;
     align-items: center;
@@ -301,7 +348,6 @@ body {
     text-align: center;
 }
 
-/* Состояние загрузки */
 .cloud-loading {
     display: flex;
     align-items: center;
@@ -311,7 +357,6 @@ body {
     font-size: 13px;
 }
 
-/* Ошибка */
 .cloud-error {
     display: flex;
     align-items: center;
@@ -353,7 +398,7 @@ body {
 .help-status-list {
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Очень маленький отступ между строками */
+    gap: 4px;
 }
 
 .help-status-row {
@@ -375,7 +420,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-width: 180px; /* Фиксируем ширину левой части, чтобы тире были на одном уровне */
+    min-width: 180px;
     flex-shrink: 0;
 }
 
@@ -401,7 +446,6 @@ body {
     line-height: 1.4;
 }
 
-/* Технические статусы */
 .help-status-row--tech {
     background: transparent;
     border: 1px dashed var(--border-color, #ddd);
@@ -529,15 +573,6 @@ body {
     font-family: monospace;
 }
 
-.help-version-current {
-    color: var(--success-color, #4caf50);
-}
-
-.help-version-date {
-    color: var(--text-light, #999);
-    font-size: 13px;
-}
-
 .help-version-changes {
     margin: 0;
     padding-left: 20px;
@@ -555,7 +590,7 @@ body {
     gap: 12px;
     margin-bottom: 12px;
     flex-wrap: wrap;
-    position: relative; /* Для позиционирования меню */
+    position: relative;
 }
 
 .table-search {
@@ -618,8 +653,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding-bottom: 8px; /* Отступ снизу для группы */
-    border-bottom: 1px solid var(--border-color, #eee); /* Разделитель между группами */
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color, #eee);
 }
 
 .table-columns-group:last-child {
@@ -632,7 +667,7 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-light, #999);
-    margin-top: 8px; /* Отступ сверху для заголовка */
+    margin-top: 8px;
     margin-bottom: 4px;
     letter-spacing: 0.5px;
 }
@@ -653,10 +688,10 @@ body {
     accent-color: var(--primary-color, #2196f3);
 }
 
-/* Контейнер таблицы с фиксированной высотой и своим скроллом */
+/* Таблица с фиксированной высотой */
 .table-wrapper {
-    overflow: auto; /* Включает и вертикальный, и горизонтальный скролл */
-    max-height: calc(100vh - 300px); /* Высота таблицы: экран минус шапка настроек и панель фильтров */
+    overflow: auto;
+    max-height: calc(100vh - 300px);
     min-height: 300px;
     border: 1px solid var(--border-color, #eee);
     border-radius: 8px;
@@ -670,8 +705,6 @@ body {
 
 .data-table thead {
     background: var(--bg-body, #f5f5f5);
-    position: sticky;
-    top: 0;
 }
 
 .data-table th {
@@ -681,6 +714,9 @@ body {
     color: var(--text-main, #333);
     border-bottom: 2px solid var(--border-color, #ddd);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .data-table td {
@@ -698,7 +734,6 @@ body {
     border-bottom: none;
 }
 
-/* Иконки ссылок в таблице */
 .table-link-icon {
     text-decoration: none;
     font-size: 16px;
