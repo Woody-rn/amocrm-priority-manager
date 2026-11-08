@@ -12,8 +12,11 @@ export class YandexDiskStorage implements ICloudStorage {
     private tokenKey = 'yandexToken';
     private token: string | null = null;
 
+    // Промис для предотвращения гонки при инициализации
+    private initPromise: Promise<void>;
+
     constructor() {
-        void this.loadToken();
+        this.initPromise = this.loadToken();
     }
 
     private async loadToken(): Promise<void> {
@@ -58,10 +61,13 @@ export class YandexDiskStorage implements ICloudStorage {
     }
 
     async isConnected(): Promise<boolean> {
+        // Ждем завершения инициализации (загрузки токена)
+        await this.initPromise;
         return !!this.token;
     }
 
     private async ensureFolder(): Promise<void> {
+        await this.initPromise;
         const response = await fetch(`${API_URL}/resources?path=${encodeURIComponent(BACKUP_FOLDER)}`, {
             headers: { Authorization: `OAuth ${this.token}` }
         });
@@ -75,12 +81,12 @@ export class YandexDiskStorage implements ICloudStorage {
     }
 
     async upload(data: string, filename: string): Promise<void> {
+        await this.initPromise;
         if (!this.token) throw new Error('Нет авторизации');
         await this.ensureFolder();
 
         const fullPath = `${BACKUP_FOLDER}/${filename}`;
 
-        // 1. Получаем URL для загрузки
         const uploadUrlResponse = await fetch(
             `${API_URL}/resources/upload?path=${encodeURIComponent(fullPath)}&overwrite=true`,
             { headers: { Authorization: `OAuth ${this.token}` } }
@@ -92,7 +98,6 @@ export class YandexDiskStorage implements ICloudStorage {
 
         const { href } = await uploadUrlResponse.json();
 
-        // 2. Загружаем файл
         const uploadResponse = await fetch(href, {
             method: 'PUT',
             body: data
@@ -104,6 +109,7 @@ export class YandexDiskStorage implements ICloudStorage {
     }
 
     async listBackups(): Promise<CloudFile[]> {
+        await this.initPromise;
         if (!this.token) throw new Error('Нет авторизации');
         await this.ensureFolder();
 
@@ -131,9 +137,9 @@ export class YandexDiskStorage implements ICloudStorage {
     }
 
     async download(path: string): Promise<string | null> {
+        await this.initPromise;
         if (!this.token) throw new Error('Нет авторизации');
 
-        // 1. Получаем URL для скачивания
         const downloadUrlResponse = await fetch(
             `${API_URL}/resources/download?path=${encodeURIComponent(path)}`,
             { headers: { Authorization: `OAuth ${this.token}` } }
@@ -145,7 +151,6 @@ export class YandexDiskStorage implements ICloudStorage {
 
         const { href } = await downloadUrlResponse.json();
 
-        // 2. Скачиваем файл
         const downloadResponse = await fetch(href);
         if (!downloadResponse.ok) {
             throw new Error('Не удалось скачать файл');
@@ -155,6 +160,7 @@ export class YandexDiskStorage implements ICloudStorage {
     }
 
     async delete(path: string): Promise<void> {
+        await this.initPromise;
         if (!this.token) throw new Error('Нет авторизации');
 
         const response = await fetch(`${API_URL}/resources?path=${encodeURIComponent(path)}`, {

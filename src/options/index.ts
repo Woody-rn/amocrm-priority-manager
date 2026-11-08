@@ -306,7 +306,10 @@ class OptionsApp {
                 uploadBtn.textContent = '⏳ Сохранение...';
                 const clients = await this.storage.getAllClients();
                 const json = JSON.stringify(clients, null, 2);
-                const filename = `amo-clients-${new Date().toISOString().split('T')[0]}.json`;
+                const now = new Date();
+                const datePart = now.toISOString().split('T')[0];
+                const timePart = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                const filename = `amo-clients-${datePart}_${timePart}.json`;
                 await this.cloudStorage.upload(json, filename);
                 await renderBackups();
                 alert('Бэкап сохранен в Яндекс.Диск!');
