@@ -7,8 +7,7 @@ import { SettingsService } from '../../shared/settings';
 const storage = new StorageService();
 const settingsService = new SettingsService();
 
-// Глобальная переменная для хранения ссылки на обработчике клика вне меню,
-// чтобы предотвратить утечку памяти при повторных вызовах renderTable.
+// Глобальная переменная для предотвращения утечки памяти
 let globalOutsideClickHandler: ((e: MouseEvent) => void) | null = null;
 
 // ====КОНФИГУРАЦИЯ КОЛОНОК===================================
@@ -32,7 +31,7 @@ const COLUMNS: TableColumn[] = [
     { key: 'aiScore', label: 'Оценка ИИ', visible: false, sortable: true,
         formatter: (c) => c.aiScore != null ? String(c.aiScore) : ''
     },
-    { key: 'aiRecommendedStatus', label: 'Рекомендуемый. статус', visible: false, sortable: true,
+    { key: 'aiRecommendedStatus', label: 'Рекоменд. статус', visible: false, sortable: true,
         formatter: (c) => c.aiRecommendedStatus ? `${STATUS_CONFIG[c.aiRecommendedStatus]?.icon || ''} ${STATUS_CONFIG[c.aiRecommendedStatus]?.label}` : ''
     },
     { key: 'description', label: 'Описание (ИИ)', visible: false, sortable: false },
@@ -54,7 +53,7 @@ export function renderTable(container: HTMLElement): void {
 
     let baseUrl = '';
 
-    // 1. Панель управления (Поиск, Статус, Кнопка колонок)
+    // 1. Панель управления (Поиск, Статус, Кнопка колонок, Экспорт)
     const controls = document.createElement('div');
     controls.className = 'table-controls';
 
@@ -77,7 +76,7 @@ export function renderTable(container: HTMLElement): void {
 
     const columnsDropdown = document.createElement('div');
     columnsDropdown.className = 'table-columns-dropdown';
-    columnsDropdown.style.display = 'none'; // Скрыто по умолчанию
+    columnsDropdown.style.display = 'none';
 
     // Группировка колонок
     const groups = [
@@ -122,13 +121,18 @@ export function renderTable(container: HTMLElement): void {
         columnsDropdown.appendChild(groupDiv);
     });
 
-    // Обработчик клика по кнопке (показать/скрыть)
+    // Кнопка "Экспорт в CSV"
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'table-columns-btn'; // Используем тот же стиль
+    exportBtn.textContent = '📥 Экспорт в CSV';
+
+    // Обработчик клика по кнопке колонок
     columnsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         columnsDropdown.style.display = columnsDropdown.style.display === 'none' ? 'block' : 'none';
     });
 
-    // ЗАЩИТА ОТ УТЕЧКИ ПАМЯТИ: удаляем старый обработчик перед добавлением нового
+    // Защита от утечки памяти
     if (globalOutsideClickHandler) {
         document.removeEventListener('click', globalOutsideClickHandler);
     }
@@ -145,6 +149,7 @@ export function renderTable(container: HTMLElement): void {
     controls.appendChild(searchInput);
     controls.appendChild(statusFilter);
     controls.appendChild(columnsBtn);
+    controls.appendChild(exportBtn);
     controls.appendChild(columnsDropdown);
     container.appendChild(controls);
 
@@ -267,6 +272,71 @@ export function renderTable(container: HTMLElement): void {
         });
         table.appendChild(tbody);
     };
+
+    // ==== ЛОГИКА ЭКСПОРТА В CSV ====
+    exportBtn.addEventListener('click', () => {
+        if (filteredClients.length === 0) {
+            alert('Нет данных для экспорта (таблица пуста).');
+            return;
+        }
+
+        const visibleCols = COLUMNS.filter((c) => c.visible);
+
+        // Заголовки
+        const headers = visibleCols.map(c => `"${c.label}"`).join(';');
+
+        // Массив для строк
+        const rows: string[] = [];
+
+        // Проходимся по каждому клиенту
+        filteredClients.forEach(client => {
+            const rowData: string[] = [];
+
+            // Проходимся по каждой видимой колонке
+            visibleCols.forEach(col => {
+                let val = '';
+
+                // Для ссылок выгружаем полный URL, а не иконку
+                if (col.key === 'leadUrl' && client.leadUrl) {
+                    const cleanBase = baseUrl.replace(/\/+$/, '');
+                    const cleanPath = client.leadUrl.replace(/^\/+/, '');
+                    val = client.leadUrl.startsWith('http') ? client.leadUrl : `${cleanBase}/${cleanPath}`;
+                } else if (col.key === 'companyUrl' && client.companyUrl) {
+                    const cleanBase = baseUrl.replace(/\/+$/, '');
+                    const cleanPath = client.companyUrl.replace(/^\/+/, '');
+                    val = client.companyUrl.startsWith('http') ? client.companyUrl : `${cleanBase}/${cleanPath}`;
+                } else if (col.formatter) {
+                    const res = col.formatter(client);
+                    if (typeof res === 'string') {
+                        val = res;
+                    } else if (res instanceof HTMLElement) {
+                        val = res.textContent || '';
+                    }
+                } else {
+                    const v = client[col.key as keyof Client];
+                    val = v == null ? '' : String(v);
+                }
+
+                // Очищаем от переносов строк и экранируем кавычки
+                val = val.replace(/\n/g, ' ').replace(/"/g, '""');
+                rowData.push(`"${val}"`);
+            });
+
+            // Собираем строку через точку с запятой
+            rows.push(rowData.join(';'));
+        });
+
+        // \uFEFF — BOM-маркер для корректного открытия UTF-8 в Excel
+        const csvContent = '\uFEFF' + [headers, ...rows].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `amo-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    });
 
     // 4. Загрузка данных
     const load = async () => {
