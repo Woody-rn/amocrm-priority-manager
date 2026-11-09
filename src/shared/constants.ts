@@ -32,6 +32,7 @@ export const STORAGE_KEYS = {
     diagnosticsEnabled: 'diagnosticsEnabled',
     diagnosticsLog: 'diagnosticsLog',
     tableSettings: 'tableSettings',
+    highlightedStatuses: 'highlightedStatuses',
 } as const;
 
 // ====SIDEBAR HANDLE (ручка "Панель")========================

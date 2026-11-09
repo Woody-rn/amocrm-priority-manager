@@ -1,6 +1,7 @@
 import type { ClientStatus } from '../shared/types';
 import type { PageType } from '../shared/constants';
 import { STORAGE_KEYS, URL_PATTERNS, SIDEBAR_DEFAULT_WIDTH } from '../shared/constants';
+import { STATUS_ORDER } from '../shared/statuses';
 import { StorageService } from '../shared/storage';
 import { buildClientIndexes } from '../shared/utils/build-client-indexes';
 import { extractLeadIdFromElement, extractNameFromElement } from '../shared/utils/parsers';
@@ -29,6 +30,9 @@ class ContentApp {
     private pageLoaderObserver: MutationObserver | null = null;
     private traceStartTime = 0;
 
+    // Настройки видимости бейджей
+    private highlightedStatuses: string[] = [];
+
     // Защита от гонок
     private isRefreshing = false;
     private pendingRefresh = false;
@@ -40,6 +44,7 @@ class ContentApp {
 
     async init(): Promise<void> {
         this.diag.log('INIT started');
+        await this.loadVisibilitySettings();
         await this.createHandle();
         this.diag.log('Handle created');
         await this.refresh();
@@ -53,7 +58,28 @@ class ContentApp {
 
         this.addEventListeners();
         this.setupBackgroundListener();
+        this.setupStorageListener();
         this.diag.log('INIT complete');
+    }
+
+    // ====SETTINGS=============================================
+
+    private async loadVisibilitySettings(): Promise<void> {
+        const res = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
+        const saved = res[STORAGE_KEYS.highlightedStatuses] as string[] | undefined;
+
+        // По умолчанию показываем все статусы
+        this.highlightedStatuses = saved || [...STATUS_ORDER, 'wild', 'unknown'];
+    }
+
+    private setupStorageListener(): void {
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'local' && changes[STORAGE_KEYS.highlightedStatuses]) {
+                this.diag.log('SETTINGS: highlightedStatuses changed, refreshing UI');
+                this.highlightedStatuses = changes[STORAGE_KEYS.highlightedStatuses].newValue || [];
+                this.render();
+            }
+        });
     }
 
     // ====REFRESH==============================================
@@ -139,20 +165,31 @@ class ContentApp {
                 const leadId = extractLeadIdFromElement(element);
                 const status = this.resolver.resolve(clientName, leadId);
 
-                const client = this.resolver.getClient(leadId, clientName);
-                const otherDealsCount = client
-                    ? this.resolver.getOtherDealsCount(client.parserCompanyName, client.directionAndFunnel)
-                    : 0;
+                // ПРОВЕРКА ВИДИМОСТИ СТАТУСА
+                if (this.highlightedStatuses.includes(status)) {
+                    const client = this.resolver.getClient(leadId, clientName);
+                    const otherDealsCount = client
+                        ? this.resolver.getOtherDealsCount(client.parserCompanyName, client.directionAndFunnel)
+                        : 0;
 
-                this.highlighter.apply(element, status, clientName, otherDealsCount);
-                applied++;
+                    this.highlighter.apply(element, status, clientName, otherDealsCount);
+                    applied++;
+                } else {
+                    // Если статус скрыт пользователем, убираем подсветку
+                    this.highlighter.clear(element);
+                }
             }
             this.diag.log(`RENDER: applied badges to ${applied} / ${elements.length}`);
 
             const firstEl = elements[0];
             if (!firstEl.dataset.clientName && attempt < 3) {
-                this.diag.log(`RENDER: first element missing badge, retry (attempt ${attempt})`);
-                setTimeout(() => this.render(attempt + 1), 300);
+                // Если первый элемент не получил бейдж, возможно, DOM еще не дорисовался
+                // Проверяем, есть ли вообще видимые элементы
+                const hasVisible = elements.some(el => el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }));
+                if (hasVisible) {
+                    this.diag.log(`RENDER: first element missing badge, retry (attempt ${attempt})`);
+                    setTimeout(() => this.render(attempt + 1), 300);
+                }
             }
         } finally {
             setTimeout(() => {
