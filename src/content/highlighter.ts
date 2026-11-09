@@ -84,11 +84,11 @@ export class Highlighter {
         }
         wrapper.appendChild(statusBadge);
 
-        // 2. Бейдж количества (если есть)
+        // 2. Бейдж количества (если есть) - добавляем плюс
         if (count > 0) {
             const countBadge = document.createElement('span');
             countBadge.className = this.COUNT_BADGE_CLASS;
-            countBadge.textContent = String(count);
+            countBadge.textContent = `+${count}`; // <-- ДОБАВИЛИ ПЛЮС
             countBadge.title = `У этой компании есть ещё ${count} сделок(и) по другому продукту`;
             wrapper.appendChild(countBadge);
         }
@@ -120,7 +120,7 @@ export class Highlighter {
     private addInlineCountBadge(element: HTMLElement, count: number): void {
         const badge = document.createElement('span');
         badge.className = this.COUNT_BADGE_CLASS;
-        badge.textContent = String(count);
+        badge.textContent = `+${count}`; // <-- ДОБАВИЛИ ПЛЮС
         badge.title = `У этой компании есть ещё ${count} сделок(и) по другому продукту`;
         element.appendChild(badge);
     }
@@ -157,7 +157,7 @@ export class Highlighter {
             status === 'cold_competitor_dealer' ||
             status === 'cold_refusal_demo' ||
             status === 'cold_refusal_start' ||
-            status === 'passive' // <-- ДОБАВИЛИ СЮДА
+            status === 'passive'
         );
     }
 }
