@@ -10,6 +10,7 @@ export type ClientStatus =
     | 'cold_competitor_dealer'   // 🏷️ Конкурент-дилер
     | 'cold_refusal_demo'        // 📉 После демо
     | 'cold_refusal_start'       // 🥶 На старте
+    | 'passive'                  // 🐢 Пассивный интерес
     | 'unclear'                  // ❓ На уточнении
     | 'dead'                     // 💀 Мёртвый
     | 'not_target'               // 🚫 Нецелевой

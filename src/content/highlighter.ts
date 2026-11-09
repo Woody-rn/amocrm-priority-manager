@@ -156,7 +156,8 @@ export class Highlighter {
             status === 'cold_competitor_software' ||
             status === 'cold_competitor_dealer' ||
             status === 'cold_refusal_demo' ||
-            status === 'cold_refusal_start'
+            status === 'cold_refusal_start' ||
+            status === 'passive' // <-- ДОБАВИЛИ СЮДА
         );
     }
 }

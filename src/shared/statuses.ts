@@ -98,6 +98,16 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
         description: 'Позвонили первый раз, сразу отказался',
         savable: true
     },
+    passive: {
+        label: 'Пассивный интерес',
+        fullLabel: 'Холодный: Пассивный интерес',
+        icon: '🐢',
+        color: '#ff9800',
+        className: 'priority-passive',
+        group: 'cold',
+        description: 'Вежливо общается, но уклоняется от действий и тянет время',
+        savable: true
+    },
 
     // --- Архив ---
     unclear: {
@@ -157,7 +167,7 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
 export const STATUS_ORDER: ClientStatus[] = [
     'new', 'hot', 'warm',
     'active', 'renewal',
-    'cold_competitor_software', 'cold_competitor_dealer', 'cold_refusal_demo', 'cold_refusal_start',
+    'cold_competitor_software', 'cold_competitor_dealer', 'cold_refusal_demo', 'cold_refusal_start', 'passive',
     'unclear', 'dead', 'not_target'
     // wild и unknown не включаем, они не для выбора
 ];

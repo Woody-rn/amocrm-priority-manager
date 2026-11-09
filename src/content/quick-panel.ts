@@ -123,11 +123,13 @@ export class QuickPanel {
         header.style.borderColor = STATUS_CONFIG.cold_competitor_software.color;
         header.style.border = '2px solid';
 
+        // ДОБАВИЛИ passive В СПИСОК
         const coldStatuses: ClientStatus[] = [
             'cold_competitor_software',
             'cold_competitor_dealer',
             'cold_refusal_demo',
-            'cold_refusal_start'
+            'cold_refusal_start',
+            'passive'
         ];
 
         const updateHeader = () => {
