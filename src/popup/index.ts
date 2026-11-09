@@ -37,7 +37,10 @@ class PopupApp {
     }
 
     private async saveSettings(): Promise<void> {
-        await chrome.storage.local.set({ [STORAGE_KEYS.highlightedStatuses]: this.highlightedStatuses });
+        // Технические статусы (wild, unknown) должны быть всегда включены,
+        // чтобы расширение могло их подсвечивать, даже если пользователь нажал "Ничего"
+        const toSave = Array.from(new Set([...this.highlightedStatuses, 'wild', 'unknown']));
+        await chrome.storage.local.set({ [STORAGE_KEYS.highlightedStatuses]: toSave });
     }
 
     private async renderStats(): Promise<void> {
@@ -47,42 +50,68 @@ class PopupApp {
         const clients = await this.storage.getAllClients();
         container.innerHTML = '';
 
+        // Общий счетчик
         const total = document.createElement('div');
         total.className = 'popup-stat-total';
         total.innerHTML = `<span>Всего клиентов</span><strong>${clients.length}</strong>`;
         container.appendChild(total);
 
-        // Добавляем wild и unknown в конец списка для настройки
-        const allStatuses = [...STATUS_ORDER, 'wild', 'unknown'] as ClientStatus[];
+        // Конфигурация групп (без заголовков и без технических статусов)
+        const groups: { statuses: ClientStatus[]; isCold?: boolean }[] = [
+            { statuses: ['new'] },
+            { statuses: ['hot', 'warm'] },
+            { statuses: ['active', 'renewal'] },
+            {
+                statuses: ['cold_competitor_software', 'cold_competitor_dealer', 'cold_refusal_demo', 'cold_refusal_start', 'passive'],
+                isCold: true
+            },
+            { statuses: ['unclear', 'dead', 'not_target'] } // Оставили только пользовательские
+        ];
 
-        allStatuses.forEach((status) => {
-            const config = STATUS_CONFIG[status];
-            const count = clients.filter((c) => c.status === status).length;
+        groups.forEach(group => {
+            // Создаем контейнер группы
+            const groupEl = document.createElement('div');
+            groupEl.className = 'popup-status-group';
+            if (group.isCold) {
+                groupEl.classList.add('popup-status-group--cold');
+            }
 
-            const isChecked = this.highlightedStatuses.includes(status);
+            // Сетка для чекбоксов
+            const gridEl = document.createElement('div');
+            gridEl.className = 'popup-status-group-grid';
 
-            const row = document.createElement('label');
-            row.className = 'popup-stat-row';
-            row.innerHTML = `
-                <input type="checkbox" class="popup-stat-checkbox" value="${status}" ${isChecked ? 'checked' : ''}>
-                <span class="popup-stat-icon">${config.icon}</span>
-                <span class="popup-stat-label" title="${config.label}">${config.label}</span>
-                <span class="popup-stat-count">${count}</span>
-            `;
+            // Рендерим каждый статус
+            group.statuses.forEach((status) => {
+                const config = STATUS_CONFIG[status];
+                const count = clients.filter((c) => c.status === status).length;
+                const isChecked = this.highlightedStatuses.includes(status);
 
-            const checkbox = row.querySelector('input') as HTMLInputElement;
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    if (!this.highlightedStatuses.includes(status)) {
-                        this.highlightedStatuses.push(status);
+                const row = document.createElement('label');
+                row.className = 'popup-stat-row';
+                row.innerHTML = `
+                    <input type="checkbox" class="popup-stat-checkbox" value="${status}" ${isChecked ? 'checked' : ''}>
+                    <span class="popup-stat-icon">${config.icon}</span>
+                    <span class="popup-stat-label" title="${config.label}">${config.label}</span>
+                    <span class="popup-stat-count">${count}</span>
+                `;
+
+                const checkbox = row.querySelector('input') as HTMLInputElement;
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        if (!this.highlightedStatuses.includes(status)) {
+                            this.highlightedStatuses.push(status);
+                        }
+                    } else {
+                        this.highlightedStatuses = this.highlightedStatuses.filter(s => s !== status);
                     }
-                } else {
-                    this.highlightedStatuses = this.highlightedStatuses.filter(s => s !== status);
-                }
-                void this.saveSettings();
+                    void this.saveSettings();
+                });
+
+                gridEl.appendChild(row);
             });
 
-            container.appendChild(row);
+            groupEl.appendChild(gridEl);
+            container.appendChild(groupEl);
         });
     }
 
@@ -102,16 +131,16 @@ class PopupApp {
             window.close();
         });
 
-        // Выбрать все
+        // Выбрать все (включая технические)
         document.getElementById('selectAllBtn')?.addEventListener('click', () => {
             this.highlightedStatuses = [...STATUS_ORDER, 'wild', 'unknown'];
             void this.saveSettings();
             void this.renderStats();
         });
 
-        // Снять все
+        // Снять все (оставляем только технические для работы)
         document.getElementById('deselectAllBtn')?.addEventListener('click', () => {
-            this.highlightedStatuses = [];
+            this.highlightedStatuses = []; // saveSettings сам добавит wild и unknown
             void this.saveSettings();
             void this.renderStats();
         });
