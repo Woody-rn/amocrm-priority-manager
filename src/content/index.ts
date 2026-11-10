@@ -13,6 +13,7 @@ import { ExtractorFactory } from './extractors/ExtractorFactory';
 import type { IClientExtractor } from './extractors/IClientExtractor';
 import { EnrichmentExtractor } from './extractors/EnrichmentExtractor';
 import { DiagnosticsService } from '../shared/diagnostics';
+import { groupListRowsByDate } from './date-grouper'; // <-- ИМПОРТ
 
 class ContentApp {
     private storage = new StorageService();
@@ -30,8 +31,9 @@ class ContentApp {
     private pageLoaderObserver: MutationObserver | null = null;
     private traceStartTime = 0;
 
-    // Настройки видимости бейджей
+    // Настройки
     private highlightedStatuses: string[] = [];
+    private groupTasksByDate = false;
 
     // Защита от гонок
     private isRefreshing = false;
@@ -65,18 +67,28 @@ class ContentApp {
     // ====SETTINGS=============================================
 
     private async loadVisibilitySettings(): Promise<void> {
-        const res = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
-        const saved = res[STORAGE_KEYS.highlightedStatuses] as string[] | undefined;
+        const res = await chrome.storage.local.get([
+            STORAGE_KEYS.highlightedStatuses,
+            STORAGE_KEYS.groupTasksByDate
+        ]);
 
-        // По умолчанию показываем все статусы
-        this.highlightedStatuses = saved || [...STATUS_ORDER, 'wild', 'unknown'];
+        this.highlightedStatuses = (res[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
+        this.groupTasksByDate = res[STORAGE_KEYS.groupTasksByDate] === true;
     }
 
     private setupStorageListener(): void {
         chrome.storage.onChanged.addListener((changes, namespace) => {
-            if (namespace === 'local' && changes[STORAGE_KEYS.highlightedStatuses]) {
+            if (namespace !== 'local') return;
+
+            if (changes[STORAGE_KEYS.highlightedStatuses]) {
                 this.diag.log('SETTINGS: highlightedStatuses changed, refreshing UI');
                 this.highlightedStatuses = changes[STORAGE_KEYS.highlightedStatuses].newValue || [];
+                this.render();
+            }
+
+            if (changes[STORAGE_KEYS.groupTasksByDate]) {
+                this.diag.log('SETTINGS: groupTasksByDate changed, refreshing UI');
+                this.groupTasksByDate = changes[STORAGE_KEYS.groupTasksByDate].newValue === true;
                 this.render();
             }
         });
@@ -165,7 +177,6 @@ class ContentApp {
                 const leadId = extractLeadIdFromElement(element);
                 const status = this.resolver.resolve(clientName, leadId);
 
-                // ПРОВЕРКА ВИДИМОСТИ СТАТУСА
                 if (this.highlightedStatuses.includes(status)) {
                     const client = this.resolver.getClient(leadId, clientName);
                     const otherDealsCount = client
@@ -175,16 +186,20 @@ class ContentApp {
                     this.highlighter.apply(element, status, clientName, otherDealsCount);
                     applied++;
                 } else {
-                    // Если статус скрыт пользователем, убираем подсветку
                     this.highlighter.clear(element);
                 }
             }
             this.diag.log(`RENDER: applied badges to ${applied} / ${elements.length}`);
 
+            // ГРУППИРОВКА ПО ДАТАМ
+            if (this.groupTasksByDate && this.detectPage() === 'todo') {
+                groupListRowsByDate();
+            } else {
+                document.querySelectorAll('.custom-date-separator').forEach(el => el.classList.remove('custom-date-separator'));
+            }
+
             const firstEl = elements[0];
             if (!firstEl.dataset.clientName && attempt < 3) {
-                // Если первый элемент не получил бейдж, возможно, DOM еще не дорисовался
-                // Проверяем, есть ли вообще видимые элементы
                 const hasVisible = elements.some(el => el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }));
                 if (hasVisible) {
                     this.diag.log(`RENDER: first element missing badge, retry (attempt ${attempt})`);

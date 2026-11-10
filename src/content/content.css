@@ -338,3 +338,8 @@ body.theme-dark .priority-deal-count {
     color: #e0e0e0 !important;
     border-color: #666 !important;
 }
+
+/* ====DATE GROUPING========================================== */
+.js-list-row.custom-date-separator .js-list-row__cell {
+    border-top: 2px dashed #2196f3 !important; /* Синий пунктир */
+}

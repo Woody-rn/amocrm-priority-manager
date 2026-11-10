@@ -9,11 +9,13 @@ import { applyTheme } from '../shared/utils/theme';
 class PopupApp {
     private storage = new StorageService();
     private highlightedStatuses: string[] = [];
+    private groupTasksByDate = false;
 
     async init(): Promise<void> {
         await applyTheme();
         this.renderVersion();
         await this.loadSettings();
+        await this.renderDateGrouping(); // <-- Добавили инициализацию группировки
         await this.renderStats();
         this.addEventListeners();
     }
@@ -43,6 +45,20 @@ class PopupApp {
         await chrome.storage.local.set({ [STORAGE_KEYS.highlightedStatuses]: toSave });
     }
 
+    private async renderDateGrouping(): Promise<void> {
+        const result = await chrome.storage.local.get(STORAGE_KEYS.groupTasksByDate);
+        this.groupTasksByDate = result[STORAGE_KEYS.groupTasksByDate] === true;
+
+        const toggle = document.getElementById('groupTasksByDateToggle') as HTMLInputElement;
+        if (toggle) {
+            toggle.checked = this.groupTasksByDate;
+            toggle.addEventListener('change', async () => {
+                this.groupTasksByDate = toggle.checked;
+                await chrome.storage.local.set({ [STORAGE_KEYS.groupTasksByDate]: this.groupTasksByDate });
+            });
+        }
+    }
+
     private async renderStats(): Promise<void> {
         const container = document.getElementById('popupStats');
         if (!container) return;
@@ -65,22 +81,19 @@ class PopupApp {
                 statuses: ['cold_competitor_software', 'cold_competitor_dealer', 'cold_refusal_demo', 'cold_refusal_start', 'passive'],
                 isCold: true
             },
-            { statuses: ['unclear', 'dead', 'not_target'] } // Оставили только пользовательские
+            { statuses: ['unclear', 'dead', 'not_target'] }
         ];
 
         groups.forEach(group => {
-            // Создаем контейнер группы
             const groupEl = document.createElement('div');
             groupEl.className = 'popup-status-group';
             if (group.isCold) {
                 groupEl.classList.add('popup-status-group--cold');
             }
 
-            // Сетка для чекбоксов
             const gridEl = document.createElement('div');
             gridEl.className = 'popup-status-group-grid';
 
-            // Рендерим каждый статус
             group.statuses.forEach((status) => {
                 const config = STATUS_CONFIG[status];
                 const count = clients.filter((c) => c.status === status).length;
@@ -131,16 +144,16 @@ class PopupApp {
             window.close();
         });
 
-        // Выбрать все (включая технические)
+        // Выбрать все
         document.getElementById('selectAllBtn')?.addEventListener('click', () => {
             this.highlightedStatuses = [...STATUS_ORDER, 'wild', 'unknown'];
             void this.saveSettings();
             void this.renderStats();
         });
 
-        // Снять все (оставляем только технические для работы)
+        // Снять все
         document.getElementById('deselectAllBtn')?.addEventListener('click', () => {
-            this.highlightedStatuses = []; // saveSettings сам добавит wild и unknown
+            this.highlightedStatuses = [];
             void this.saveSettings();
             void this.renderStats();
         });
