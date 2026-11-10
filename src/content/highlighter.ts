@@ -152,12 +152,7 @@ export class Highlighter {
     private isLightColor(status: ClientStatus): boolean {
         return (
             status === 'warm' ||
-            status === 'unclear' ||
-            status === 'cold_competitor_software' ||
-            status === 'cold_competitor_dealer' ||
-            status === 'cold_refusal_demo' ||
-            status === 'cold_refusal_start' ||
-            status === 'passive'
+            status === 'unclear'
         );
     }
 }

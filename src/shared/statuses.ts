@@ -7,8 +7,8 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
     new: {
         label: 'Новый',
         fullLabel: 'Новый',
-        icon: '🆕',
-        color: '#2196f3',
+        icon: '✨',
+        color: '#e91e63',
         className: 'priority-new',
         group: 'active',
         description: 'Свежий лид',
@@ -60,9 +60,9 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
     // --- Холодные ---
     cold_competitor_software: {
         label: 'Конкурент ПО',
-        fullLabel: 'Холодный: Конкурент ПО',
+        fullLabel: 'Конкурент ПО (Холодный)',
         icon: '⚔️',
-        color: '#ff9800',
+        color: '#5b8add', // <-- Чистый стальной синий
         className: 'priority-cold',
         group: 'cold',
         description: 'Пользуется аналогичным ПО (Гарант / КонсультантПлюс)',
@@ -70,19 +70,19 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
     },
     cold_competitor_dealer: {
         label: 'Конкурент-дилер',
-        fullLabel: 'Холодный: Конкурент-дилер',
+        fullLabel: 'Конкурент-дилер (Холодный)',
         icon: '🏷️',
-        color: '#ff9800',
+        color: '#5b8add',
         className: 'priority-cold-dealer',
         group: 'cold',
         description: 'nanoCAD есть, но куплен у другого дилера',
         savable: true
     },
     cold_refusal_demo: {
-        label: 'После демо',
-        fullLabel: 'Холодный: Отказ после демо',
+        label: 'После демо/теста',
+        fullLabel: 'Отказ после демо/теста (Холодный)',
         icon: '📉',
-        color: '#ff9800',
+        color: '#5b8add',
         className: 'priority-cold',
         group: 'cold',
         description: 'Провели презентацию, но клиент осознанно сказал «нет»',
@@ -90,9 +90,9 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
     },
     cold_refusal_start: {
         label: 'На старте',
-        fullLabel: 'Холодный: Отказ на старте',
+        fullLabel: 'Отказ на старте (Холодный)',
         icon: '🥶',
-        color: '#ff9800',
+        color: '#5b8add',
         className: 'priority-cold',
         group: 'cold',
         description: 'Позвонили первый раз, сразу отказался',
@@ -100,9 +100,9 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
     },
     passive: {
         label: 'Пассивный интерес',
-        fullLabel: 'Холодный: Пассивный интерес',
+        fullLabel: 'Пассивный интерес (Холодный)',
         icon: '🐢',
-        color: '#ff9800',
+        color: '#5b8add',
         className: 'priority-passive',
         group: 'cold',
         description: 'Вежливо общается, но уклоняется от действий и тянет время',
@@ -121,20 +121,20 @@ export const STATUS_CONFIG: Record<ClientStatus, StatusConfig> = {
         savable: true
     },
     dead: {
-        label: 'Мёртвый',
-        fullLabel: 'Мёртвый',
-        icon: '💀',
-        color: '#b71c1c',
+        label: 'Нет связи',
+        fullLabel: 'Нет связи',
+        icon: '📵',
+        color: '#757575',
         className: 'priority-dead',
         group: 'archive',
-        description: 'Недозвон. Технический архив',
+        description: 'Недоступен. Ликвидация, долг или не берут трубку',
         savable: true
     },
     not_target: {
         label: 'Нецелевой',
         fullLabel: 'Нецелевой',
         icon: '🚫',
-        color: '#b71c1c',
+        color: '#757575',
         className: 'priority-not-target',
         group: 'archive',
         description: 'Нецелевой клиент. Вывод из воронки навсегда',

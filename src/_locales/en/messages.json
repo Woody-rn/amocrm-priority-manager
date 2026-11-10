@@ -34,7 +34,7 @@
     "message": "Use the popup (extension icon) for export/import and settings."
   },
   "logicTodoNew": {
-    "message": "New deal: added to DB with 'New' status."
+    "message": "New deal: added to DB with '✨ New' status."
   },
   "logicTodoExisting": {
     "message": "Deal already in DB: metadata is updated, but status is not reset."

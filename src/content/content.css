@@ -150,8 +150,9 @@
     border-radius: 8px !important;
 }
 
+/* Новый - Малиновый */
 .priority-new {
-    background-color: rgba(33, 150, 243, 0.15) !important;
+    background-color: rgba(233, 30, 99, 0.15) !important;
     border-radius: 8px !important;
 }
 
@@ -175,28 +176,30 @@
     border-radius: 8px !important;
 }
 
+/* Холодные - Стальной синий */
 .priority-cold {
-    background-color: rgba(255, 152, 0, 0.15) !important;
+    background-color: rgba(91, 138, 221, 0.15) !important;
     border-radius: 8px !important;
 }
 
 .priority-cold-dealer {
-    background-color: rgba(255, 152, 0, 0.15) !important;
+    background-color: rgba(91, 138, 221, 0.15) !important;
     border-radius: 8px !important;
 }
 
 .priority-passive {
-    background-color: rgba(255, 152, 0, 0.15) !important;
+    background-color: rgba(91, 138, 221, 0.15) !important;
     border-radius: 8px !important;
 }
 
+/* Архив - Темно-серые */
 .priority-dead {
-    background-color: rgba(244, 67, 54, 0.15) !important;
+    background-color: rgba(117, 117, 117, 0.15) !important;
     border-radius: 8px !important;
 }
 
 .priority-not-target {
-    background-color: rgba(244, 67, 54, 0.15) !important;
+    background-color: rgba(117, 117, 117, 0.15) !important;
     border-radius: 8px !important;
 }
 
@@ -225,13 +228,13 @@
 
 /* Контейнер для бейджей в карточке сделки (textarea) */
 .priority-badges-wrapper {
-    display: flex !important;           /* Делаем флексом, чтобы бейджи стояли в ряд */
+    display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    width: fit-content !important;      /* Ширина по содержимому */
-    margin-left: auto !important;       /* ПРИЖИМАЕМ ВПРАВО */
-    margin-top: 8px !important;         /* Отступ сверху (как было раньше) */
-    margin-right: 16px !important;      /* Отступ справа (как было раньше) */
+    width: fit-content !important;
+    margin-left: auto !important;
+    margin-top: 8px !important;
+    margin-right: 16px !important;
     white-space: nowrap !important;
 }
 
@@ -256,19 +259,24 @@
 }
 
 .priority-badge-unclear { background-color: #e0e0e0 !important; }
-.priority-badge-new { background-color: #2196f3 !important; }
+
+/* Бейджи */
+.priority-badge-new { background-color: #e91e63 !important; } /* Малиновый */
 .priority-badge-hot { background-color: #4caf50 !important; }
 .priority-badge-warm { background-color: #ffeb3b !important; }
 .priority-badge-active { background-color: #9c27b0 !important; }
 .priority-badge-renewal { background-color: #009688 !important; }
-.priority-badge-cold { background-color: #ff9800 !important; }
+
+.priority-badge-cold { background-color: #5b8add !important; } /* Стальной синий */
 .priority-badge-cold-dealer {
-    background-color: #ff9800 !important;
+    background-color: #5b8add !important;
     border: 1px dashed #fff !important;
 }
-.priority-badge-passive { background-color: #ff9800 !important; }
-.priority-badge-dead { background-color: #f44336 !important; }
-.priority-badge-not-target { background-color: #f44336 !important; }
+.priority-badge-passive { background-color: #5b8add !important; }
+
+.priority-badge-dead { background-color: #757575 !important; } /* Темно-серый */
+.priority-badge-not-target { background-color: #757575 !important; }
+
 .priority-badge-wild { background-color: #81d4fa !important; }
 .priority-badge-unknown { background-color: #9e9e9e !important; }
 
@@ -318,7 +326,6 @@
     border-radius: 9px !important;
     font-size: 11px !important;
     font-weight: bold !important;
-    /* margin-left убран, так как теперь его контролирует .priority-badges-wrapper через gap */
     vertical-align: middle !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
     border: 1px solid #ccc !important;
