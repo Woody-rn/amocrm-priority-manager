@@ -1,7 +1,5 @@
 import { STORAGE_KEYS } from './constants';
 
-// ====TYPES==================================================
-
 export type Theme = 'light' | 'dark' | 'system';
 
 export interface AppSettings {
@@ -16,15 +14,12 @@ const DEFAULT_SETTINGS: AppSettings = {
     diagnosticsEnabled: false
 };
 
-// ====SETTINGS SERVICE=======================================
-
 export class SettingsService {
     private storage = chrome.storage.local;
 
     async getSettings(): Promise<AppSettings> {
         const result = await this.storage.get(STORAGE_KEYS.settings);
         const saved = result[STORAGE_KEYS.settings] as Partial<AppSettings> | undefined;
-
         return { ...DEFAULT_SETTINGS, ...saved };
     }
 
@@ -32,14 +27,12 @@ export class SettingsService {
         const current = await this.getSettings();
         const updated = { ...current, ...patch };
 
-        // Нормализуем baseUrl: убираем все слэши на конце
         if (updated.baseUrl) {
             updated.baseUrl = updated.baseUrl.replace(/\/+$/, '');
         }
 
         await this.storage.set({ [STORAGE_KEYS.settings]: updated });
 
-        // Синхронизируем флаг отладки для DiagnosticsService
         if (patch.diagnosticsEnabled !== undefined) {
             await this.storage.set({
                 [STORAGE_KEYS.diagnosticsEnabled]: patch.diagnosticsEnabled

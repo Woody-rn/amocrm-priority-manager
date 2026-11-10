@@ -13,7 +13,7 @@ import { ExtractorFactory } from './extractors/ExtractorFactory';
 import type { IClientExtractor } from './extractors/IClientExtractor';
 import { EnrichmentExtractor } from './extractors/EnrichmentExtractor';
 import { DiagnosticsService } from '../shared/diagnostics';
-import { groupListRowsByDate } from './date-grouper'; // <-- ИМПОРТ
+import { groupListRowsByDate } from './date-grouper';
 
 class ContentApp {
     private storage = new StorageService();
@@ -33,6 +33,7 @@ class ContentApp {
 
     // Настройки
     private highlightedStatuses: string[] = [];
+    private quickFilterStatuses: string[] = []; // <-- Добавили
     private groupTasksByDate = false;
 
     // Защита от гонок
@@ -69,10 +70,15 @@ class ContentApp {
     private async loadVisibilitySettings(): Promise<void> {
         const res = await chrome.storage.local.get([
             STORAGE_KEYS.highlightedStatuses,
+            STORAGE_KEYS.quickFilterStatuses, // <-- Читаем
             STORAGE_KEYS.groupTasksByDate
         ]);
 
         this.highlightedStatuses = (res[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
+
+        // Если быстрый фильтр не задан, используем глобальный профиль
+        this.quickFilterStatuses = (res[STORAGE_KEYS.quickFilterStatuses] as string[]) || [...this.highlightedStatuses];
+
         this.groupTasksByDate = res[STORAGE_KEYS.groupTasksByDate] === true;
     }
 
@@ -80,14 +86,24 @@ class ContentApp {
         chrome.storage.onChanged.addListener((changes, namespace) => {
             if (namespace !== 'local') return;
 
+            // Если профиль изменился в настройках
             if (changes[STORAGE_KEYS.highlightedStatuses]) {
-                this.diag.log('SETTINGS: highlightedStatuses changed, refreshing UI');
+                this.diag.log('SETTINGS: highlightedStatuses changed');
                 this.highlightedStatuses = changes[STORAGE_KEYS.highlightedStatuses].newValue || [];
+                // Сбрасываем быстрый фильтр, чтобы он соответствовал новому профилю
+                this.quickFilterStatuses = [...this.highlightedStatuses];
+                this.render();
+            }
+
+            // Если пользователь поставил/снял галочки в Popup
+            if (changes[STORAGE_KEYS.quickFilterStatuses]) {
+                this.diag.log('SETTINGS: quickFilterStatuses changed');
+                this.quickFilterStatuses = changes[STORAGE_KEYS.quickFilterStatuses].newValue || [];
                 this.render();
             }
 
             if (changes[STORAGE_KEYS.groupTasksByDate]) {
-                this.diag.log('SETTINGS: groupTasksByDate changed, refreshing UI');
+                this.diag.log('SETTINGS: groupTasksByDate changed');
                 this.groupTasksByDate = changes[STORAGE_KEYS.groupTasksByDate].newValue === true;
                 this.render();
             }
@@ -177,7 +193,8 @@ class ContentApp {
                 const leadId = extractLeadIdFromElement(element);
                 const status = this.resolver.resolve(clientName, leadId);
 
-                if (this.highlightedStatuses.includes(status)) {
+                // ИСПОЛЬЗУЕМ БЫСТРЫЙ ФИЛЬТР ДЛЯ ОТРИСОВКИ БЕЙДЖЕЙ
+                if (this.quickFilterStatuses.includes(status)) {
                     const client = this.resolver.getClient(leadId, clientName);
                     const otherDealsCount = client
                         ? this.resolver.getOtherDealsCount(client.parserCompanyName, client.directionAndFunnel)
@@ -398,7 +415,8 @@ class ContentApp {
                 this.quickPanel.show(
                     element,
                     element.dataset.clientName,
-                    element.dataset.status as ClientStatus
+                    element.dataset.status as ClientStatus,
+                    this.quickFilterStatuses // <-- Передаем быстрый фильтр
                 );
             }
         });
@@ -452,6 +470,12 @@ class ContentApp {
     }
 
     private async handleStatusSelect(clientName: string, status: ClientStatus): Promise<void> {
+        // ЗАЩИТА: Если статус скрыт в профиле, игнорируем клик
+        if (!this.quickFilterStatuses.includes(status)) {
+            this.diag.warn(`STATUS_SELECT: status "${status}" is hidden in profile, ignoring`);
+            return;
+        }
+
         this.diag.log(`STATUS_SELECT: ${clientName} -> ${status}`);
         const element = Array.from(
             document.querySelectorAll('a.js-navigate-link, textarea#person_n')

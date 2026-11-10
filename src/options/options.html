@@ -68,7 +68,19 @@
                     <button id="saveSettingsBtn" class="btn btn-primary btn-mt-16">Сохранить настройки</button>
                 </div>
 
-                <!-- Блок 2: Отладка и Резервное копирование -->
+                <!-- Блок 2: Мой профиль статусов -->
+                <div class="options-card">
+                    <h2>🎯 Мой профиль статусов</h2>
+                    <p style="font-size: 13px; color: var(--text-muted, #666); margin-top: 0;">
+                        Выберите статусы, с которыми вы работаете. Остальные будут скрыты из интерфейса amoCRM (из быстрой панели, фильтров и подсветки).
+                    </p>
+                    <div id="profileStatusesContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+                        <!-- Сюда JS вставит чекбоксы -->
+                    </div>
+                    <button id="saveProfileBtn" class="btn btn-primary">💾 Сохранить профиль</button>
+                </div>
+
+                <!-- Блок 3: Отладка и Резервное копирование -->
                 <div class="options-card">
                     <div class="settings-grid-2">
                         <div class="settings-column">
@@ -96,7 +108,7 @@
                     </div>
                 </div>
 
-                <!-- Блок 3: Яндекс.Диск -->
+                <!-- Блок 4: Яндекс.Диск -->
                 <div class="options-card">
                     <h2>☁️ Синхронизация с Яндекс.Диском</h2>
                     <div class="cloud-controls">
@@ -110,7 +122,7 @@
                     <div class="cloud-backups" id="cloudBackups"></div>
                 </div>
 
-                <!-- Блок 4: Опасная зона -->
+                <!-- Блок 5: Опасная зона -->
                 <div class="options-card card-danger">
                     <h2 class="text-danger">⚠️ Опасная зона</h2>
                     <div class="options-actions">

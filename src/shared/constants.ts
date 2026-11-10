@@ -33,6 +33,7 @@ export const STORAGE_KEYS = {
     diagnosticsLog: 'diagnosticsLog',
     tableSettings: 'tableSettings',
     highlightedStatuses: 'highlightedStatuses',
+    quickFilterStatuses: 'quickFilterStatuses',
     groupTasksByDate: 'groupTasksByDate',
 } as const;
 

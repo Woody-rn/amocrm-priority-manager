@@ -11,12 +11,17 @@ export class QuickPanel {
     private coldGroupOpen = false;
     private hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
+    // Массив разрешенных статусов
+    private allowedStatuses: string[] = [];
+
     constructor(
         private onStatusSelect: (clientName: string, status: ClientStatus) => void
     ) {}
 
-    show(anchor: HTMLElement, clientName: string, currentStatus: ClientStatus): void {
+    // Обновляем список доступных статусов при каждом показе
+    show(anchor: HTMLElement, clientName: string, currentStatus: ClientStatus, allowedStatuses: string[]): void {
         this.hide();
+        this.allowedStatuses = allowedStatuses;
 
         this.currentClientName = clientName;
         this.currentStatus = currentStatus;
@@ -72,11 +77,33 @@ export class QuickPanel {
             this.hide();
         });
 
-        panel.appendChild(this.renderRow(['new', 'hot', 'warm']));
-        panel.appendChild(this.renderRow(['active', 'renewal']));
-        panel.appendChild(this.renderColdGroup());
-        panel.appendChild(this.renderRow(['dead', 'not_target']));
-        panel.appendChild(this.renderRow(['unclear']));
+        // Фильтруем статусы перед рендером
+        const filter = (statuses: ClientStatus[]) => statuses.filter(s => this.allowedStatuses.includes(s));
+
+        const activeRow = filter(['new', 'hot', 'warm']);
+        const currentRow = filter(['active', 'renewal']);
+        const archiveRow = filter(['dead', 'not_target']);
+        const unclearRow = filter(['unclear']);
+
+        if (activeRow.length > 0) panel.appendChild(this.renderRow(activeRow));
+        if (currentRow.length > 0) panel.appendChild(this.renderRow(currentRow));
+
+        // Для холодных отдельная логика (там группа)
+        const coldGroup = this.renderColdGroup();
+        if (coldGroup) panel.appendChild(coldGroup);
+
+        if (archiveRow.length > 0) panel.appendChild(this.renderRow(archiveRow));
+        if (unclearRow.length > 0) panel.appendChild(this.renderRow(unclearRow));
+
+        // Если вообще ничего не доступно, показываем заглушку
+        if (panel.children.length === 0) {
+            const msg = document.createElement('div');
+            msg.style.fontSize = '12px';
+            msg.style.color = '#666';
+            msg.style.padding = '8px';
+            msg.textContent = 'Все статусы скрыты в вашем профиле.';
+            panel.appendChild(msg);
+        }
 
         return panel;
     }
@@ -95,9 +122,7 @@ export class QuickPanel {
         const button = document.createElement('button');
         button.className = 'quick-panel__button';
 
-        // Только рамка берет цвет из конфига, текст остается черным (из CSS)
         button.style.borderColor = config.color;
-
         button.textContent = `${config.icon} ${config.fullLabel}`;
 
         if (status === this.currentStatus) {
@@ -114,23 +139,31 @@ export class QuickPanel {
         return button;
     }
 
-    private renderColdGroup(): HTMLElement {
-        const group = document.createElement('div');
-        group.className = 'quick-panel__group';
-
-        const header = document.createElement('button');
-        header.className = 'quick-panel__group-header';
-        header.style.borderColor = STATUS_CONFIG.cold_competitor_software.color;
-        header.style.border = '2px solid';
-
-        // ДОБАВИЛИ passive В СПИСОК
-        const coldStatuses: ClientStatus[] = [
+    private renderColdGroup(): HTMLElement | null {
+        // Все возможные холодные статусы
+        const allColdStatuses: ClientStatus[] = [
             'cold_competitor_software',
             'cold_competitor_dealer',
             'cold_refusal_demo',
             'cold_refusal_start',
             'passive'
         ];
+
+        // Оставляем только те, что разрешены в профиле
+        const coldStatuses = allColdStatuses.filter(s => this.allowedStatuses.includes(s));
+
+        // Если ни одного холодного статуса не разрешено, не рисуем группу
+        if (coldStatuses.length === 0) return null;
+
+        const group = document.createElement('div');
+        group.className = 'quick-panel__group';
+
+        const header = document.createElement('button');
+        header.className = 'quick-panel__group-header';
+
+        // Берем цвет первого доступного статуса для рамки
+        header.style.borderColor = STATUS_CONFIG[coldStatuses[0]].color;
+        header.style.border = '2px solid';
 
         const updateHeader = () => {
             if (this.coldGroupOpen) {
@@ -149,7 +182,6 @@ export class QuickPanel {
             const button = document.createElement('button');
             button.className = 'quick-panel__button';
 
-            // Только рамка берет цвет из конфига
             button.style.borderColor = config.color;
             button.style.textAlign = 'left';
             button.style.width = '100%';

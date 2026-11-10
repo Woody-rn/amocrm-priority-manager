@@ -3,20 +3,21 @@ import { StorageService } from '../shared/storage';
 import { SettingsService, type Theme } from '../shared/settings';
 import { STATUS_CONFIG, STATUS_ORDER } from '../shared/statuses';
 import { applyTheme } from '../shared/utils/theme';
-import type { ChangelogData, Client } from '../shared/types';
+import type { ChangelogData, Client, ClientStatus } from '../shared/types';
 import { renderFeatures } from './components/render-features';
 import { renderIntegration } from './components/render-integration';
 import { renderHistory } from './components/render-history';
 import { YandexDiskStorage } from '../shared/cloud/YandexDiskStorage';
 import { DiagnosticsService } from '../shared/diagnostics';
 import { loadTableSettings, renderTable } from './components/render-table';
+import { STORAGE_KEYS } from '../shared/constants';
 
 class OptionsApp {
     private storage = new StorageService();
     private settingsService = new SettingsService();
     private cloudStorage = new YandexDiskStorage();
     private chart: Chart | null = null;
-    private currentChartType: 'status' | 'funnel' = 'status'; // <-- Добавили тип графика
+    private currentChartType: 'status' | 'funnel' = 'status';
     private diag = new DiagnosticsService('options');
 
     async init(): Promise<void> {
@@ -62,6 +63,66 @@ class OptionsApp {
         if (diagCheckbox) diagCheckbox.checked = settings.diagnosticsEnabled;
 
         this.diag.setEnabled(settings.diagnosticsEnabled);
+
+        await this.renderProfileSettings();
+    }
+
+    private async renderProfileSettings(): Promise<void> {
+        const container = document.getElementById('profileStatusesContainer');
+        if (!container) return;
+
+        const result = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
+        const saved = result[STORAGE_KEYS.highlightedStatuses] as string[] | undefined;
+        const activeStatuses = saved || [...STATUS_ORDER, 'wild', 'unknown'];
+
+        container.innerHTML = '';
+
+        // Добавляем 'new', 'wild', 'unknown' в список, но они будут disabled
+        const allStatuses = [...STATUS_ORDER, 'wild', 'unknown'] as ClientStatus[];
+        const forcedStatuses: ClientStatus[] = ['new', 'wild', 'unknown'];
+
+        allStatuses.forEach(status => {
+            const config = STATUS_CONFIG[status];
+            const isForced = forcedStatuses.includes(status);
+
+            // Если статус принудительный, он всегда checked. Иначе смотрим в базу.
+            const isChecked = isForced ? true : activeStatuses.includes(status);
+
+            const label = document.createElement('label');
+            label.className = 'checkbox-label';
+            label.style.fontSize = '13px';
+            // Если принудительный, делаем его серым, чтобы было видно, что его нельзя менять
+            label.style.opacity = isForced ? '0.6' : '1';
+            label.style.cursor = isForced ? 'not-allowed' : 'pointer';
+
+            label.innerHTML = `
+                <input type="checkbox" value="${status}" ${isChecked ? 'checked' : ''} ${isForced ? 'disabled' : ''}>
+                <span>${config.icon} ${config.label}</span>
+            `;
+            container.appendChild(label);
+        });
+    }
+
+    private async saveProfile(): Promise<void> {
+        const container = document.getElementById('profileStatusesContainer');
+        if (!container) return;
+
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+        const selectedStatuses: string[] = [];
+
+        checkboxes.forEach(cb => {
+            if ((cb as HTMLInputElement).checked) {
+                selectedStatuses.push((cb as HTMLInputElement).value);
+            }
+        });
+
+        // Жестко гарантируем, что системные статусы всегда в профиле
+        if (!selectedStatuses.includes('new')) selectedStatuses.push('new');
+        if (!selectedStatuses.includes('wild')) selectedStatuses.push('wild');
+        if (!selectedStatuses.includes('unknown')) selectedStatuses.push('unknown');
+
+        await chrome.storage.local.set({ [STORAGE_KEYS.highlightedStatuses]: selectedStatuses });
+        alert('Профиль статусов сохранен!');
     }
 
     private setupTabs(): void {
@@ -90,13 +151,16 @@ class OptionsApp {
     private async renderChart(type: 'status' | 'funnel' = this.currentChartType): Promise<void> {
         this.currentChartType = type;
 
-        // Обновляем активную кнопку
         document.querySelectorAll('.chart-btn').forEach(btn => {
             btn.classList.toggle('active', (btn as HTMLElement).dataset.chart === type);
         });
 
         const container = document.getElementById('statsChartContainer');
         if (!container) return;
+
+        // Загружаем профиль пользователя
+        const profileRes = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
+        const allowedStatuses = (profileRes[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
 
         const clients = await this.storage.getAllClients();
 
@@ -120,6 +184,9 @@ class OptionsApp {
 
         if (type === 'status') {
             STATUS_ORDER.forEach((status) => {
+                // ФИЛЬТРУЕМ: показываем только те статусы, что есть в профиле
+                if (!allowedStatuses.includes(status)) return;
+
                 const count = clients.filter((c) => c.status === status).length;
                 if (count === 0) return;
                 const config = STATUS_CONFIG[status];
@@ -128,20 +195,22 @@ class OptionsApp {
                 colors.push(config.color);
             });
         } else if (type === 'funnel') {
+            // Для воронок считаем только те сделки, чьи статусы разрешены
             const funnelCounts: Record<string, number> = {};
             clients.forEach(c => {
+                if (!allowedStatuses.includes(c.status)) return; // <-- ФИЛЬТР ПО ПРОФИЛЮ
+
                 const funnel = c.directionAndFunnel || 'Не указана';
                 funnelCounts[funnel] = (funnelCounts[funnel] || 0) + 1;
             });
 
-            // Сортируем по алфавиту (A-Z)
             const sortedFunnels = Object.entries(funnelCounts).sort((a, b) =>
                 a[0].localeCompare(b[0], 'ru')
             );
 
             labels = sortedFunnels.map(([name]) => name);
             data = sortedFunnels.map(([, count]) => count);
-            colors = sortedFunnels.map(() => '#2196f3'); // Единый синий цвет
+            colors = sortedFunnels.map(() => '#2196f3');
         }
 
         if (data.length === 0) {
@@ -163,7 +232,7 @@ class OptionsApp {
                 }]
             },
             options: {
-                indexAxis: 'y', // <--- ГЛАВНОЕ ИЗМЕНЕНИЕ: делаем график горизонтальным
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
@@ -172,7 +241,7 @@ class OptionsApp {
                         beginAtZero: true,
                         ticks: {
                             precision: 0,
-                            stepSize: 50 // <-- Жестко задаем шаг в 50 (0, 50, 100, 150...)
+                            stepSize: 50
                         }
                     },
                     y: {
@@ -238,6 +307,7 @@ class OptionsApp {
     // ====CLOUD SYNC (YANDEX.DISK)============================
 
     private async setupCloud(): Promise<void> {
+        // ... (код без изменений с версии 2.4.0)
         const connectBtn = document.getElementById('cloudConnectBtn') as HTMLButtonElement;
         const uploadBtn = document.getElementById('cloudUploadBtn') as HTMLButtonElement;
         const openCloudBtn = document.getElementById('cloudOpenBtn') as HTMLAnchorElement;
@@ -471,12 +541,16 @@ class OptionsApp {
 
     private addEventListeners(): void {
         document.getElementById('saveSettingsBtn')?.addEventListener('click', () => void this.saveSettings());
+        document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
+            void this.saveProfile().then(() => {
+                void this.renderChart(); // Перерисовываем график после сохранения профиля
+            });
+        });
 
         document.querySelector('[data-tab="analytics"]')?.addEventListener('click', () => {
             void this.renderChart();
         });
 
-        // Переключение графиков
         document.querySelectorAll('.chart-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const type = (e.target as HTMLElement).dataset.chart as 'status' | 'funnel';

@@ -8,16 +8,21 @@ import { applyTheme } from '../shared/utils/theme';
 
 class PopupApp {
     private storage = new StorageService();
-    private highlightedStatuses: string[] = [];
-    private groupTasksByDate = false;
+
+    // Глобальный профиль (из настроек)
+    private profileStatuses: string[] = [];
+
+    // Локальные галочки (только для быстрого скрытия)
+    private visibleStatuses: string[] = [];
 
     async init(): Promise<void> {
         await applyTheme();
         this.renderVersion();
         await this.loadSettings();
-        await this.renderDateGrouping(); // <-- Добавили инициализацию группировки
+        await this.renderDateGrouping();
         await this.renderStats();
         this.addEventListeners();
+        this.setupStorageListener();
     }
 
     private renderVersion(): void {
@@ -30,31 +35,22 @@ class PopupApp {
         const result = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
         const saved = result[STORAGE_KEYS.highlightedStatuses] as string[] | undefined;
 
-        // Если настроек нет (первый запуск), включаем все статусы
-        if (saved) {
-            this.highlightedStatuses = saved;
-        } else {
-            this.highlightedStatuses = [...STATUS_ORDER, 'wild', 'unknown'];
-        }
-    }
+        // Это наш профиль из настроек
+        this.profileStatuses = saved || [...STATUS_ORDER, 'wild', 'unknown'];
 
-    private async saveSettings(): Promise<void> {
-        // Технические статусы (wild, unknown) должны быть всегда включены,
-        // чтобы расширение могло их подсвечивать, даже если пользователь нажал "Ничего"
-        const toSave = Array.from(new Set([...this.highlightedStatuses, 'wild', 'unknown']));
-        await chrome.storage.local.set({ [STORAGE_KEYS.highlightedStatuses]: toSave });
+        // По умолчанию в Popup показываем всё, что есть в профиле
+        this.visibleStatuses = [...this.profileStatuses];
     }
 
     private async renderDateGrouping(): Promise<void> {
         const result = await chrome.storage.local.get(STORAGE_KEYS.groupTasksByDate);
-        this.groupTasksByDate = result[STORAGE_KEYS.groupTasksByDate] === true;
+        const groupTasksByDate = result[STORAGE_KEYS.groupTasksByDate] === true;
 
         const toggle = document.getElementById('groupTasksByDateToggle') as HTMLInputElement;
         if (toggle) {
-            toggle.checked = this.groupTasksByDate;
+            toggle.checked = groupTasksByDate;
             toggle.addEventListener('change', async () => {
-                this.groupTasksByDate = toggle.checked;
-                await chrome.storage.local.set({ [STORAGE_KEYS.groupTasksByDate]: this.groupTasksByDate });
+                await chrome.storage.local.set({ [STORAGE_KEYS.groupTasksByDate]: toggle.checked });
             });
         }
     }
@@ -72,7 +68,7 @@ class PopupApp {
         total.innerHTML = `<span>Всего клиентов</span><strong>${clients.length}</strong>`;
         container.appendChild(total);
 
-        // Конфигурация групп (без заголовков и без технических статусов)
+        // Конфигурация групп
         const groups: { statuses: ClientStatus[]; isCold?: boolean }[] = [
             { statuses: ['new'] },
             { statuses: ['hot', 'warm'] },
@@ -85,6 +81,11 @@ class PopupApp {
         ];
 
         groups.forEach(group => {
+            // Показываем только те, что есть в ГЛОБАЛЬНОМ профиле
+            const allowedGroupStatuses = group.statuses.filter(s => this.profileStatuses.includes(s));
+
+            if (allowedGroupStatuses.length === 0) return;
+
             const groupEl = document.createElement('div');
             groupEl.className = 'popup-status-group';
             if (group.isCold) {
@@ -94,10 +95,12 @@ class PopupApp {
             const gridEl = document.createElement('div');
             gridEl.className = 'popup-status-group-grid';
 
-            group.statuses.forEach((status) => {
+            allowedGroupStatuses.forEach((status) => {
                 const config = STATUS_CONFIG[status];
                 const count = clients.filter((c) => c.status === status).length;
-                const isChecked = this.highlightedStatuses.includes(status);
+
+                // Проверяем, стоит ли галочка в ЛОКАЛЬНОМ фильтре
+                const isChecked = this.visibleStatuses.includes(status);
 
                 const row = document.createElement('label');
                 row.className = 'popup-stat-row';
@@ -111,13 +114,14 @@ class PopupApp {
                 const checkbox = row.querySelector('input') as HTMLInputElement;
                 checkbox.addEventListener('change', () => {
                     if (checkbox.checked) {
-                        if (!this.highlightedStatuses.includes(status)) {
-                            this.highlightedStatuses.push(status);
+                        if (!this.visibleStatuses.includes(status)) {
+                            this.visibleStatuses.push(status);
                         }
                     } else {
-                        this.highlightedStatuses = this.highlightedStatuses.filter(s => s !== status);
+                        this.visibleStatuses = this.visibleStatuses.filter(s => s !== status);
                     }
-                    void this.saveSettings();
+                    // Сохраняем локальный фильтр в отдельное хранилище
+                    void this.saveQuickFilter();
                 });
 
                 gridEl.appendChild(row);
@@ -125,6 +129,26 @@ class PopupApp {
 
             groupEl.appendChild(gridEl);
             container.appendChild(groupEl);
+        });
+    }
+
+    private async saveQuickFilter(): Promise<void> {
+        // Сохраняем локальные галочки в отдельный ключ (quickFilterStatuses)
+        // Технические статусы (wild, unknown) всегда должны быть включены в подсветку,
+        // но в Popup мы их не показываем.
+        const toSave = Array.from(new Set([...this.visibleStatuses, 'wild', 'unknown']));
+        await chrome.storage.local.set({ 'quickFilterStatuses': toSave });
+    }
+
+    private setupStorageListener(): void {
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'local' && changes[STORAGE_KEYS.highlightedStatuses]) {
+                // Если профиль изменился в настройках — обновляем Popup
+                this.profileStatuses = changes[STORAGE_KEYS.highlightedStatuses].newValue || [];
+                // Сбрасываем локальный фильтр, чтобы он соответствовал новому профилю
+                this.visibleStatuses = [...this.profileStatuses];
+                void this.renderStats();
+            }
         });
     }
 
@@ -144,17 +168,17 @@ class PopupApp {
             window.close();
         });
 
-        // Выбрать все
+        // Выбрать все (включает все, что есть в ПРОФИЛЕ)
         document.getElementById('selectAllBtn')?.addEventListener('click', () => {
-            this.highlightedStatuses = [...STATUS_ORDER, 'wild', 'unknown'];
-            void this.saveSettings();
+            this.visibleStatuses = [...this.profileStatuses];
+            void this.saveQuickFilter();
             void this.renderStats();
         });
 
         // Снять все
         document.getElementById('deselectAllBtn')?.addEventListener('click', () => {
-            this.highlightedStatuses = [];
-            void this.saveSettings();
+            this.visibleStatuses = [];
+            void this.saveQuickFilter();
             void this.renderStats();
         });
     }

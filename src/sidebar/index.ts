@@ -56,6 +56,7 @@ class SidebarApp {
     private collapsedState: CollapsedState = { sections: {} };
     private filtersController: FiltersController | null = null;
     private baseUrl: string = '';
+    private allowedStatuses: string[] = [];
 
     async init(): Promise<void> {
         this.diag.log('Sidebar init started');
@@ -63,6 +64,10 @@ class SidebarApp {
         const settings = await this.settingsService.getSettings();
         this.baseUrl = settings.baseUrl;
         this.diag.setEnabled(settings.diagnosticsEnabled);
+
+        // Загружаем профиль статусов
+        const profileRes = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
+        this.allowedStatuses = (profileRes[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
 
         this.filterState = await loadFilterState();
         this.collapsedState = await this.collapsedStateService.getState();
@@ -92,7 +97,9 @@ class SidebarApp {
         const clientsContainer = document.getElementById('clientsList');
         if (!clientsContainer) return;
 
-        const filtered = applyFilters(this.allClients, this.filterState);
+        // Передаем this.allowedStatuses третьим аргументом
+        const filtered = applyFilters(this.allClients, this.filterState, this.allowedStatuses);
+
         renderClients(
             clientsContainer,
             filtered,
@@ -123,7 +130,8 @@ class SidebarApp {
                         this.filtersController.render(this.allClients);
                     }
                 }
-            }
+            },
+            this.allowedStatuses // <-- Передаем 4-м аргументом
         );
 
         this.filtersController.render(this.allClients);
@@ -179,10 +187,17 @@ class SidebarApp {
 
             if (changes[STORAGE_KEYS.settings]) {
                 void applyTheme();
-                // Перечитываем настройки, чтобы подхватить diagnosticsEnabled
                 void this.settingsService.getSettings().then(settings => {
                     this.diag.setEnabled(settings.diagnosticsEnabled);
                 });
+            }
+
+            // Если профиль статусов изменился — перерисовываем фильтры
+            if (changes[STORAGE_KEYS.highlightedStatuses]) {
+                this.allowedStatuses = changes[STORAGE_KEYS.highlightedStatuses].newValue || [];
+                if (this.filtersController) {
+                    this.setupFilters(); // Пересоздаем с новыми статусами
+                }
             }
         });
     }
