@@ -782,3 +782,43 @@ body {
 .table-link-icon:hover {
     transform: scale(1.2);
 }
+
+/* ====CHART CONTROLS========================================= */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.chart-header h2 {
+    margin: 0;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.chart-btn {
+    border: 1px solid var(--border-color, #ddd);
+    background: var(--bg-card, #fff);
+    color: var(--text-muted, #666);
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chart-btn:hover {
+    background: var(--bg-hover, #f0f0f0);
+}
+
+.chart-btn.active {
+    background: var(--primary-color, #2196f3);
+    color: #fff;
+    border-color: var(--primary-color, #2196f3);
+}

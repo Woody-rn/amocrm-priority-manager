@@ -27,7 +27,13 @@
         <!-- Аналитика -->
         <section class="options-panel" id="tab-analytics">
             <div class="options-card">
-                <h2>Распределение клиентов по статусам</h2>
+                <div class="chart-header">
+                    <h2>Аналитика клиентов</h2>
+                    <div class="chart-controls">
+                        <button class="btn btn-small chart-btn active" data-chart="status">По статусам</button>
+                        <button class="btn btn-small chart-btn" data-chart="funnel">По воронкам</button>
+                    </div>
+                </div>
                 <div class="chart-container" id="statsChartContainer"></div>
             </div>
 

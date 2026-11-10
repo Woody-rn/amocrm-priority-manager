@@ -16,6 +16,7 @@ class OptionsApp {
     private settingsService = new SettingsService();
     private cloudStorage = new YandexDiskStorage();
     private chart: Chart | null = null;
+    private currentChartType: 'status' | 'funnel' = 'status'; // <-- Добавили тип графика
     private diag = new DiagnosticsService('options');
 
     async init(): Promise<void> {
@@ -26,7 +27,7 @@ class OptionsApp {
         this.setupTabs();
         this.checkHash();
         this.addEventListeners();
-        await this.renderChart();
+        await this.renderChart('status');
         await this.renderTableTab();
         this.renderFeaturesAndHistory();
         this.renderIntegrationTab();
@@ -86,26 +87,25 @@ class OptionsApp {
         });
     }
 
-    private async renderChart(): Promise<void> {
+    private async renderChart(type: 'status' | 'funnel' = this.currentChartType): Promise<void> {
+        this.currentChartType = type;
+
+        // Обновляем активную кнопку
+        document.querySelectorAll('.chart-btn').forEach(btn => {
+            btn.classList.toggle('active', (btn as HTMLElement).dataset.chart === type);
+        });
+
         const container = document.getElementById('statsChartContainer');
         if (!container) return;
 
         const clients = await this.storage.getAllClients();
-        const labels: string[] = [];
-        const data: number[] = [];
-        const colors: string[] = [];
 
-        STATUS_ORDER.forEach((status) => {
-            const count = clients.filter((c) => c.status === status).length;
-            if (count === 0) return;
-            const config = STATUS_CONFIG[status];
-            labels.push(`${config.icon} ${config.label}`);
-            data.push(count);
-            colors.push(config.color);
-        });
-
-        if (data.length === 0) {
+        if (clients.length === 0) {
             container.innerHTML = '<p style="text-align: center; color: #999; padding-top: 100px;">Нет данных для отображения</p>';
+            if (this.chart) {
+                this.chart.destroy();
+                this.chart = null;
+            }
             return;
         }
 
@@ -114,12 +114,47 @@ class OptionsApp {
 
         if (this.chart) this.chart.destroy();
 
+        let labels: string[] = [];
+        let data: number[] = [];
+        let colors: string[] = [];
+
+        if (type === 'status') {
+            STATUS_ORDER.forEach((status) => {
+                const count = clients.filter((c) => c.status === status).length;
+                if (count === 0) return;
+                const config = STATUS_CONFIG[status];
+                labels.push(`${config.icon} ${config.label}`);
+                data.push(count);
+                colors.push(config.color);
+            });
+        } else if (type === 'funnel') {
+            const funnelCounts: Record<string, number> = {};
+            clients.forEach(c => {
+                const funnel = c.directionAndFunnel || 'Не указана';
+                funnelCounts[funnel] = (funnelCounts[funnel] || 0) + 1;
+            });
+
+            // Сортируем по алфавиту (A-Z)
+            const sortedFunnels = Object.entries(funnelCounts).sort((a, b) =>
+                a[0].localeCompare(b[0], 'ru')
+            );
+
+            labels = sortedFunnels.map(([name]) => name);
+            data = sortedFunnels.map(([, count]) => count);
+            colors = sortedFunnels.map(() => '#2196f3'); // Единый синий цвет
+        }
+
+        if (data.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #999; padding-top: 100px;">Нет данных для этого графика</p>';
+            return;
+        }
+
         this.chart = new Chart(canvas, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Количество клиентов',
+                    label: type === 'status' ? 'Количество клиентов' : 'Количество сделок',
                     data: data,
                     backgroundColor: colors,
                     borderColor: colors,
@@ -128,12 +163,21 @@ class OptionsApp {
                 }]
             },
             options: {
+                indexAxis: 'y', // <--- ГЛАВНОЕ ИЗМЕНЕНИЕ: делаем график горизонтальным
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                    x: { ticks: { maxRotation: 45, minRotation: 45 } }
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            stepSize: 50 // <-- Жестко задаем шаг в 50 (0, 50, 100, 150...)
+                        }
+                    },
+                    y: {
+                        ticks: { autoSkip: false }
+                    }
                 }
             }
         });
@@ -257,7 +301,6 @@ class OptionsApp {
                 statusEl.style.color = 'var(--success-color, #4caf50)';
                 uploadBtn.disabled = false;
 
-                // Скрываем "Подключить", показываем "Открыть" и "Отключить"
                 connectBtn.classList.add('is-hidden');
                 if (openCloudBtn) openCloudBtn.classList.remove('is-hidden');
                 if (disconnectBtn) disconnectBtn.classList.remove('is-hidden');
@@ -266,7 +309,6 @@ class OptionsApp {
                 statusEl.style.color = 'var(--text-muted, #666)';
                 uploadBtn.disabled = true;
 
-                // Показываем "Подключить", скрываем остальные
                 connectBtn.classList.remove('is-hidden');
                 if (openCloudBtn) openCloudBtn.classList.add('is-hidden');
                 if (disconnectBtn) disconnectBtn.classList.add('is-hidden');
@@ -291,7 +333,6 @@ class OptionsApp {
             }
         });
 
-        // Обработчик кнопки "Отключить"
         if (disconnectBtn) {
             disconnectBtn.addEventListener('click', async () => {
                 if (!confirm('Отключить синхронизацию с Яндекс.Диском?')) return;
@@ -433,6 +474,14 @@ class OptionsApp {
 
         document.querySelector('[data-tab="analytics"]')?.addEventListener('click', () => {
             void this.renderChart();
+        });
+
+        // Переключение графиков
+        document.querySelectorAll('.chart-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const type = (e.target as HTMLElement).dataset.chart as 'status' | 'funnel';
+                void this.renderChart(type);
+            });
         });
 
         document.getElementById('exportBtn')?.addEventListener('click', () => void this.handleExport());
