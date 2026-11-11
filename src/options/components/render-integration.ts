@@ -61,7 +61,7 @@ export function renderIntegration(container: HTMLElement): void {
             </div>
         </div>
 
-        <div class="help-tech-note help-tech-item--info">
+        <div class="help-tech-note">
             <strong>${t('integrationLeadIdNote')}</strong>
         </div>
     `;
@@ -118,6 +118,50 @@ export function renderIntegration(container: HTMLElement): void {
         </div>
     `;
     container.appendChild(lifecycleSection);
+
+    // ====3.5. ЗАЩИТА ОТ ГОНКИ СОСТОЯНИЙ========================
+    const raceSection = document.createElement('section');
+    raceSection.className = 'help-section';
+
+    raceSection.innerHTML = `
+        <h2>🛡 ${t('integrationRaceTitle')}</h2>
+        <p class="help-tech-intro">${t('integrationRaceDesc')}</p>
+        <div class="help-tech-list">
+            <div class="help-tech-item help-tech-item--success">
+                <div class="help-tech-desc">${t('integrationRaceStep1')}</div>
+            </div>
+            <div class="help-tech-item help-tech-item--success">
+                <div class="help-tech-desc">${t('integrationRaceStep2')}</div>
+            </div>
+            <div class="help-tech-item help-tech-item--success">
+                <div class="help-tech-desc">${t('integrationRaceStep3')}</div>
+            </div>
+        </div>
+    `;
+    container.appendChild(raceSection);
+
+    // ====3.6. НАДЕЖНЫЕ МАРКЕРЫ СТРАНИЦ========================
+    const markerSection = document.createElement('section');
+    markerSection.className = 'help-section';
+
+    markerSection.innerHTML = `
+        <h2>🎯 ${t('integrationMarkerTitle')}</h2>
+        <p class="help-tech-intro">${t('integrationMarkerDesc')}</p>
+        <div class="help-tech-list">
+            <div class="help-tech-item help-tech-item--info">
+                <div class="help-tech-header">/todo</div>
+                <div class="help-tech-desc">${t('integrationMarkerTodo')}</div>
+            </div>
+            <div class="help-tech-item help-tech-item--info">
+                <div class="help-tech-header">/leads/list/</div>
+                <div class="help-tech-desc">${t('integrationMarkerLeads')}</div>
+            </div>
+            <div class="help-tech-note" style="margin-top: 16px;">
+                ${t('integrationMarkerNote')}
+            </div>
+        </div>
+    `;
+    container.appendChild(markerSection);
 
     // ====4. ТОЧКИ ОТКАЗА======================================
     const failuresSection = document.createElement('section');

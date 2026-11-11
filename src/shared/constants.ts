@@ -15,7 +15,11 @@ export type PageType = 'todo' | 'leadsList' | 'leadsDetail';
 export const SELECTORS = {
     todo: 'a.js-navigate-link[href*="/leads/detail/"]',
     leadsList: 'a.js-navigate-link[href*="/leads/detail/"]',
-    leadsDetail: 'textarea#person_n'
+    leadsDetail: 'textarea#person_n',
+
+    // Железобетонный маркер страницы и сделок (проверены на реальном DOM)
+    todoPageMarker: 'a.list-top-nav__icon-button_active[href*="/todo/list/"]',
+    leadsListMarker: 'a.list-top-nav__icon-button_active[href^="/leads/list/"]'
 } as const;
 
 // ====CHROME STORAGE==========================================

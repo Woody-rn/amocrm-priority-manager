@@ -41,6 +41,12 @@ export function renderFeatures(container: HTMLElement): void {
                     <li>${t('logicDetailWild')}</li>
                 </ul>
             </div>
+            <div class="help-logic-block">
+                <h4>Работа со статусами:</h4>
+                <ul>
+                    <li>${t('logicProfiles')}</li>
+                </ul>
+            </div>
         </div>
     `;
     container.appendChild(logicSection);

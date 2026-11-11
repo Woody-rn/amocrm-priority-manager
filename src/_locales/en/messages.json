@@ -31,7 +31,7 @@
     "message": "Open the sidebar (the 'Panel' button on the right) — there you will find statistics, search, and filters."
   },
   "step5": {
-    "message": "Use the popup (extension icon) for export/import and settings."
+    "message": "In the Popup (extension icon) you can set up a <b>quick filter</b> for badge display (without changing the database), enable <b>task grouping by date</b>, and go to Settings to configure your global <b>status profile</b>."
   },
   "logicTodoNew": {
     "message": "New deal: added to DB with '✨ New' status."
@@ -44,6 +44,9 @@
   },
   "logicDetailWild": {
     "message": "Deal not in DB (Wild 🍒): selecting a status automatically adds it to DB."
+  },
+  "logicProfiles": {
+    "message": "Status profiles: if you hide a status in Settings or Popup, deals with this status will not be displayed on the page and in the sidebar, but <b>will remain in the database</b>. You can bring them back at any time by checking the box again."
   },
   "helpTechTitle": {
     "message": "Technical information"
@@ -194,5 +197,35 @@
   },
   "integrationReqListINN": {
     "message": "Column 'INN' (field-code=\"cf1699317\") — recommended (for data enrichment)."
+  },
+  "integrationRaceTitle": {
+    "message": "Garbage Collection Protection on Navigation"
+  },
+  "integrationRaceDesc": {
+    "message": "amoCRM is a SPA. When navigating from 'Companies' to 'Tasks', the URL changes instantly, but the old DOM tree (companies table) is still on screen. To prevent the extension from collecting data from the old table, a three-level protection is used:"
+  },
+  "integrationRaceStep1": {
+    "message": "1. <strong>Delay (800 ms):</strong> after a URL change, the script waits for amoCRM to redraw the page."
+  },
+  "integrationRaceStep2": {
+    "message": "2. <strong>Page Marker Check:</strong> the script collects data only if the page has the exact DOM marker (active link to /todo or /leads/list)."
+  },
+  "integrationRaceStep3": {
+    "message": "3. <strong>MutationObserver (Last resort):</strong> if the tree redraws with a delay and the script missed the new tasks, the Observer will catch the new rows and trigger collection again."
+  },
+  "integrationMarkerTitle": {
+    "message": "Reliable Page Markers"
+  },
+  "integrationMarkerDesc": {
+    "message": "To avoid collecting data from wrong pages (due to SPA render delays), the extension uses exact DOM markers that exist only on specific pages:"
+  },
+  "integrationMarkerTodo": {
+    "message": "Tasks page (/todo): <code>a.list-top-nav__icon-button_active[href*=\"/todo/list/\"]</code>. This element is only in the task list header."
+  },
+  "integrationMarkerLeads": {
+    "message": "Deals page (/leads/list/ and pipelines): <code>a.list-top-nav__icon-button_active[href^=\"/leads/list/\"]</code>. The <code>^=</code> (starts with) attribute allows capturing both 'All deals' and any specific pipeline."
+  },
+  "integrationMarkerNote": {
+    "message": "If these markers are not found, the script aborts data collection even if the URL has already changed. This protects the database from phantom records."
   }
 }

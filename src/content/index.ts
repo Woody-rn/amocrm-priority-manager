@@ -1,6 +1,6 @@
-import type { ClientStatus } from '../shared/types';
+import type { Client, ClientStatus } from '../shared/types';
 import type { PageType } from '../shared/constants';
-import { STORAGE_KEYS, URL_PATTERNS, SIDEBAR_DEFAULT_WIDTH } from '../shared/constants';
+import { STORAGE_KEYS, URL_PATTERNS, SIDEBAR_DEFAULT_WIDTH, SELECTORS } from '../shared/constants';
 import { STATUS_ORDER } from '../shared/statuses';
 import { StorageService } from '../shared/storage';
 import { buildClientIndexes } from '../shared/utils/build-client-indexes';
@@ -33,7 +33,7 @@ class ContentApp {
 
     // Настройки
     private highlightedStatuses: string[] = [];
-    private quickFilterStatuses: string[] = []; // <-- Добавили
+    private quickFilterStatuses: string[] = [];
     private groupTasksByDate = false;
 
     // Защита от гонок
@@ -70,15 +70,12 @@ class ContentApp {
     private async loadVisibilitySettings(): Promise<void> {
         const res = await chrome.storage.local.get([
             STORAGE_KEYS.highlightedStatuses,
-            STORAGE_KEYS.quickFilterStatuses, // <-- Читаем
+            STORAGE_KEYS.quickFilterStatuses,
             STORAGE_KEYS.groupTasksByDate
         ]);
 
         this.highlightedStatuses = (res[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
-
-        // Если быстрый фильтр не задан, используем глобальный профиль
         this.quickFilterStatuses = (res[STORAGE_KEYS.quickFilterStatuses] as string[]) || [...this.highlightedStatuses];
-
         this.groupTasksByDate = res[STORAGE_KEYS.groupTasksByDate] === true;
     }
 
@@ -86,16 +83,13 @@ class ContentApp {
         chrome.storage.onChanged.addListener((changes, namespace) => {
             if (namespace !== 'local') return;
 
-            // Если профиль изменился в настройках
             if (changes[STORAGE_KEYS.highlightedStatuses]) {
                 this.diag.log('SETTINGS: highlightedStatuses changed');
                 this.highlightedStatuses = changes[STORAGE_KEYS.highlightedStatuses].newValue || [];
-                // Сбрасываем быстрый фильтр, чтобы он соответствовал новому профилю
                 this.quickFilterStatuses = [...this.highlightedStatuses];
                 this.render();
             }
 
-            // Если пользователь поставил/снял галочки в Popup
             if (changes[STORAGE_KEYS.quickFilterStatuses]) {
                 this.diag.log('SETTINGS: quickFilterStatuses changed');
                 this.quickFilterStatuses = changes[STORAGE_KEYS.quickFilterStatuses].newValue || [];
@@ -193,7 +187,6 @@ class ContentApp {
                 const leadId = extractLeadIdFromElement(element);
                 const status = this.resolver.resolve(clientName, leadId);
 
-                // ИСПОЛЬЗУЕМ БЫСТРЫЙ ФИЛЬТР ДЛЯ ОТРИСОВКИ БЕЙДЖЕЙ
                 if (this.quickFilterStatuses.includes(status)) {
                     const client = this.resolver.getClient(leadId, clientName);
                     const otherDealsCount = client
@@ -233,16 +226,37 @@ class ContentApp {
     private async collectNewClients(): Promise<void> {
         if (!this.extractor) return;
 
+        // Дополнительная защита: если активной ссылки на
+        if (!document.querySelector(SELECTORS.todoPageMarker)) {
+            this.diag.log('COLLECT: todo page marker not found, aborting collection');
+            return;
+        }
+
         const elements = this.extractor.findElements();
         this.diag.log(`COLLECT: ${elements.length} raw elements`);
 
-        const newClients = [];
+        const newClients: Client[] = [];
         let skippedHidden = 0;
         let skippedNoName = 0;
+        let skippedPhantom = 0;
 
         for (const element of elements) {
+            // 1. Защита от невидимых элементов
             if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) {
                 skippedHidden++;
+                continue;
+            }
+
+            // 2. Защита от фантомных элементов (когда DOM еще не перерисовался)
+            const container = element.closest('.content-table, #list_table');
+            if (container && !container.contains(element)) {
+                skippedPhantom++;
+                continue;
+            }
+
+            // 3. Защита от дубликатов в текущей партии
+            const leadId = extractLeadIdFromElement(element);
+            if (leadId && newClients.some(c => c.leadId === leadId)) {
                 continue;
             }
 
@@ -251,7 +265,7 @@ class ContentApp {
             else skippedNoName++;
         }
 
-        this.diag.log(`COLLECT: ${newClients.length} valid, skipped hidden = ${skippedHidden}, skipped no-name = ${skippedNoName}`);
+        this.diag.log(`COLLECT: ${newClients.length} valid | skipped hidden: ${skippedHidden}, phantom: ${skippedPhantom}, no-name: ${skippedNoName}`);
 
         if (newClients.length > 0) {
             await this.storage.saveNewClients(newClients);
@@ -416,7 +430,7 @@ class ContentApp {
                     element,
                     element.dataset.clientName,
                     element.dataset.status as ClientStatus,
-                    this.quickFilterStatuses // <-- Передаем быстрый фильтр
+                    this.quickFilterStatuses
                 );
             }
         });
@@ -459,14 +473,19 @@ class ContentApp {
         }
 
         this.diag.log(`URL_CHANGE: pageType = ${newPageType}`);
+
+        // ВАЖНО: При смене страницы сразу очищаем старые бейджи, чтобы не собирать мусор
+        this.domObserver?.disconnect();
+        this.highlighter.clearAll();
+
         this.traceStartTime = Date.now();
         this.diag.trace('URL changed, trace timer reset', { url });
 
+        // Ждем 800 мс, чтобы amoCRM успела отрисовать новый список и удалить старые элементы
         setTimeout(() => {
-            if (this.loaderDebounceTimer) return;
-            this.diag.log('URL_CHANGE: no spinner activity, forcing refresh');
+            this.diag.log('URL_CHANGE: DOM should be ready, starting refresh');
             void this.refresh();
-        }, 1000);
+        }, 800);
     }
 
     private async handleStatusSelect(clientName: string, status: ClientStatus): Promise<void> {
@@ -511,6 +530,16 @@ class ContentApp {
     }
 
     private detectPage(): PageType | null {
+        // 1. Приоритетная проверка через DOM (самая надежная)
+        if (document.querySelector(SELECTORS.todoPageMarker)) {
+            return 'todo';
+        }
+
+        if (document.querySelector('textarea#person_n')) {
+            return 'leadsDetail';
+        }
+
+        // 2. Если DOM еще не отрисовался, используем URL как fallback
         return this.detectPageByUrl(location.href);
     }
 
