@@ -750,6 +750,7 @@ body {
     font-weight: 600;
     color: var(--text-main, #333);
     border-bottom: 2px solid var(--border-color, #ddd);
+    border-right: 1px solid var(--border-color, #e0e0e0); /* Вертикальная линия */
     white-space: nowrap;
     position: sticky;
     top: 0;
@@ -757,11 +758,20 @@ body {
     background: var(--bg-body, #f5f5f5);
 }
 
+.data-table th:last-child {
+    border-right: none; /* Убираем линию у последней колонки */
+}
+
 .data-table td {
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-color, #f0f0f0);
+    border-right: 1px solid var(--border-color, #f0f0f0); /* Вертикальная линия */
     color: var(--text-muted, #555);
     vertical-align: middle;
+}
+
+.data-table td:last-child {
+    border-right: none; /* Убираем линию у последней колонки */
 }
 
 .data-table tbody tr:hover {
@@ -821,4 +831,26 @@ body {
     background: var(--primary-color, #2196f3);
     color: #fff;
     border-color: var(--primary-color, #2196f3);
+}
+
+/* ====WIDE TABLE CARD======================================== */
+.options-card--wide {
+    width: 100vw;
+    max-width: 1600px;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 24px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-right: 0;
+    margin-left: 0;
+}
+
+@media (max-width: 1200px) {
+    .options-card--wide {
+        width: 100%;
+        left: 0;
+        transform: none;
+    }
 }
