@@ -207,6 +207,27 @@ export class StorageService {
         return enrichedCount;
     }
 
+    async clearAiData(): Promise<number> {
+        const clients = await this.getAllClients();
+        let count = 0;
+
+        for (const client of clients) {
+            if (client.aiRecommendedStatus || client.aiScore || client.description || client.aiLastAnalyzedAt) {
+                client.aiRecommendedStatus = null;
+                client.aiScore = null;
+                client.description = null;
+                client.aiLastAnalyzedAt = null;
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            await this.saveAllClients(clients);
+            console.log(`[StorageService] Очищены ИИ-данные у ${count} записей`);
+        }
+        return count;
+    }
+
     // ====УДАЛЕНИЕ============================================
 
     async deleteClient(id: string): Promise<boolean> {

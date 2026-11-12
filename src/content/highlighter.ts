@@ -1,4 +1,4 @@
-import type { ClientStatus } from '../shared/types';
+import type { Client, ClientStatus } from '../shared/types';
 import { STATUS_CONFIG } from '../shared/statuses';
 
 // ====HIGHLIGHTER=============================================
@@ -8,11 +8,12 @@ export class Highlighter {
     private readonly BADGE_CLASS = 'priority-badge';
     private readonly BADGE_FIXED_CLASS = 'priority-badge-fixed';
     private readonly COUNT_BADGE_CLASS = 'priority-deal-count';
-    private readonly BADGES_WRAPPER_CLASS = 'priority-badges-wrapper'; // <-- Новый класс
+    private readonly BADGES_WRAPPER_CLASS = 'priority-badges-wrapper';
 
     apply(
         element: HTMLElement,
         status: ClientStatus,
+        client: Client | null,
         clientName: string,
         otherDealsCount: number = 0
     ): void {
@@ -24,9 +25,9 @@ export class Highlighter {
         const isTextarea = element.tagName === 'TEXTAREA' || element.tagName === 'INPUT';
 
         if (isTextarea) {
-            this.addFixedBadgeWithCount(element, status, otherDealsCount);
+            this.addFixedBadgeWithCount(element, status, client, otherDealsCount);
         } else {
-            this.addInlineBadge(element, status);
+            this.addInlineBadge(element, status, client);
             if (otherDealsCount > 0) {
                 this.addInlineCountBadge(element, otherDealsCount);
             }
@@ -62,20 +63,14 @@ export class Highlighter {
 
     // ====BADGES===============================================
 
-    /**
-     * Рендер бейджей для textarea (карточка сделки).
-     * Оборачивает статус и цифру в единый контейнер, чтобы Flexbox не раскидывал их.
-     */
-    private addFixedBadgeWithCount(element: HTMLElement, status: ClientStatus, count: number): void {
+    private addFixedBadgeWithCount(element: HTMLElement, status: ClientStatus, client: Client | null, count: number): void {
         const config = STATUS_CONFIG[status];
         const parent = element.parentElement;
         if (!parent) return;
 
-        // Создаем контейнер для бейджей
         const wrapper = document.createElement('span');
         wrapper.className = this.BADGES_WRAPPER_CLASS;
 
-        // 1. Бейдж статуса
         const statusBadge = document.createElement('span');
         statusBadge.className = `${this.BADGE_FIXED_CLASS} priority-badge-${this.getBadgeSuffix(status)}`;
         statusBadge.textContent = `${config.icon} ${config.fullLabel}`;
@@ -84,23 +79,20 @@ export class Highlighter {
         }
         wrapper.appendChild(statusBadge);
 
-        // 2. Бейдж количества (если есть) - добавляем плюс
         if (count > 0) {
             const countBadge = document.createElement('span');
             countBadge.className = this.COUNT_BADGE_CLASS;
-            countBadge.textContent = `+${count}`; // <-- ДОБАВИЛИ ПЛЮС
+            countBadge.textContent = `+${count}`;
             countBadge.title = `У этой компании есть ещё ${count} сделок(и) по другому продукту`;
             wrapper.appendChild(countBadge);
         }
 
-        // Вставляем общий контейнер после textarea
+        this.appendAiBadge(wrapper, status, client);
+
         element.insertAdjacentElement('afterend', wrapper);
     }
 
-    /**
-     * Рендер бейджа статуса для ссылок (список задач).
-     */
-    private addInlineBadge(element: HTMLElement, status: ClientStatus): void {
+    private addInlineBadge(element: HTMLElement, status: ClientStatus, client: Client | null): void {
         const config = STATUS_CONFIG[status];
         const badge = document.createElement('span');
 
@@ -112,15 +104,36 @@ export class Highlighter {
         }
 
         element.appendChild(badge);
+        this.appendAiBadge(element, status, client);
     }
 
-    /**
-     * Рендер бейджа количества для ссылок (вставляется внутрь ссылки).
-     */
+    private appendAiBadge(container: HTMLElement, currentStatus: ClientStatus, client: Client | null): void {
+        if (!client || !client.aiRecommendedStatus) return;
+        if (client.aiRecommendedStatus === currentStatus) return;
+
+        const aiConfig = STATUS_CONFIG[client.aiRecommendedStatus];
+
+        const separator = document.createElement('span');
+        separator.className = 'priority-badge-ai-separator';
+        separator.textContent = '➔';
+        container.appendChild(separator);
+
+        const aiBadge = document.createElement('span');
+        aiBadge.className = `${this.BADGE_CLASS} priority-badge-ai priority-badge-${this.getBadgeSuffix(client.aiRecommendedStatus)}`;
+        aiBadge.textContent = `🤖 ${aiConfig.icon} ${aiConfig.label}`;
+        aiBadge.title = client.description || 'Рекомендация ИИ';
+
+        if (this.isLightColor(client.aiRecommendedStatus)) {
+            aiBadge.classList.add('priority-badge-light');
+        }
+
+        container.appendChild(aiBadge);
+    }
+
     private addInlineCountBadge(element: HTMLElement, count: number): void {
         const badge = document.createElement('span');
         badge.className = this.COUNT_BADGE_CLASS;
-        badge.textContent = `+${count}`; // <-- ДОБАВИЛИ ПЛЮС
+        badge.textContent = `+${count}`;
         badge.title = `У этой компании есть ещё ${count} сделок(и) по другому продукту`;
         element.appendChild(badge);
     }
@@ -128,15 +141,12 @@ export class Highlighter {
     private removeBadges(element: HTMLElement): void {
         element.querySelector(`.${this.BADGE_CLASS}`)?.remove();
         element.querySelector(`.${this.COUNT_BADGE_CLASS}`)?.remove();
+        element.querySelector('.priority-badge-ai')?.remove();
+        element.querySelector('.priority-badge-ai-separator')?.remove();
 
-        // Удаляем контейнер с фиксированными бейджами (для textarea)
         if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
             const next = element.nextElementSibling;
             if (next && next.classList.contains(this.BADGES_WRAPPER_CLASS)) {
-                next.remove();
-            }
-            // На всякий случай чистим старые версии бейджей, если остались
-            if (next && (next.classList.contains(this.BADGE_FIXED_CLASS) || next.classList.contains(this.COUNT_BADGE_CLASS))) {
                 next.remove();
             }
         }

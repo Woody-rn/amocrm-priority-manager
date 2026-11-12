@@ -77,7 +77,6 @@ class OptionsApp {
 
         container.innerHTML = '';
 
-        // Добавляем 'new', 'wild', 'unknown' в список, но они будут disabled
         const allStatuses = [...STATUS_ORDER, 'wild', 'unknown'] as ClientStatus[];
         const forcedStatuses: ClientStatus[] = ['new', 'wild', 'unknown'];
 
@@ -85,13 +84,11 @@ class OptionsApp {
             const config = STATUS_CONFIG[status];
             const isForced = forcedStatuses.includes(status);
 
-            // Если статус принудительный, он всегда checked. Иначе смотрим в базу.
             const isChecked = isForced ? true : activeStatuses.includes(status);
 
             const label = document.createElement('label');
             label.className = 'checkbox-label';
             label.style.fontSize = '13px';
-            // Если принудительный, делаем его серым, чтобы было видно, что его нельзя менять
             label.style.opacity = isForced ? '0.6' : '1';
             label.style.cursor = isForced ? 'not-allowed' : 'pointer';
 
@@ -116,7 +113,6 @@ class OptionsApp {
             }
         });
 
-        // Жестко гарантируем, что системные статусы всегда в профиле
         if (!selectedStatuses.includes('new')) selectedStatuses.push('new');
         if (!selectedStatuses.includes('wild')) selectedStatuses.push('wild');
         if (!selectedStatuses.includes('unknown')) selectedStatuses.push('unknown');
@@ -158,7 +154,6 @@ class OptionsApp {
         const container = document.getElementById('statsChartContainer');
         if (!container) return;
 
-        // Загружаем профиль пользователя
         const profileRes = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
         const allowedStatuses = (profileRes[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
 
@@ -184,7 +179,6 @@ class OptionsApp {
 
         if (type === 'status') {
             STATUS_ORDER.forEach((status) => {
-                // ФИЛЬТРУЕМ: показываем только те статусы, что есть в профиле
                 if (!allowedStatuses.includes(status)) return;
 
                 const count = clients.filter((c) => c.status === status).length;
@@ -195,10 +189,9 @@ class OptionsApp {
                 colors.push(config.color);
             });
         } else if (type === 'funnel') {
-            // Для воронок считаем только те сделки, чьи статусы разрешены
             const funnelCounts: Record<string, number> = {};
             clients.forEach(c => {
-                if (!allowedStatuses.includes(c.status)) return; // <-- ФИЛЬТР ПО ПРОФИЛЮ
+                if (!allowedStatuses.includes(c.status)) return;
 
                 const funnel = c.directionAndFunnel || 'Не указана';
                 funnelCounts[funnel] = (funnelCounts[funnel] || 0) + 1;
@@ -307,7 +300,6 @@ class OptionsApp {
     // ====CLOUD SYNC (YANDEX.DISK)============================
 
     private async setupCloud(): Promise<void> {
-        // ... (код без изменений с версии 2.4.0)
         const connectBtn = document.getElementById('cloudConnectBtn') as HTMLButtonElement;
         const uploadBtn = document.getElementById('cloudUploadBtn') as HTMLButtonElement;
         const openCloudBtn = document.getElementById('cloudOpenBtn') as HTMLAnchorElement;
@@ -510,6 +502,24 @@ class OptionsApp {
         alert(`Удалено: ${clients.length} клиентов`);
     }
 
+    private async handleClearAiData(): Promise<void> {
+        const clients = await this.storage.getAllClients();
+        const hasAiData = clients.some(c => c.aiRecommendedStatus || c.aiScore || c.description);
+
+        if (!hasAiData) {
+            alert('В базе нет данных ИИ-анализа для очистки.');
+            return;
+        }
+
+        if (!confirm('Сбросить весь ИИ-анализ (оценки, рекомендации, описания) у всех сделок?\n\nЭто действие нельзя отменить.')) {
+            return;
+        }
+
+        const clearedCount = await this.storage.clearAiData();
+        await this.renderChart();
+        alert(`ИИ-данные очищены у ${clearedCount} сделок.`);
+    }
+
     // ====DIAGNOSTICS==========================================
 
     private async downloadDiagLog(): Promise<void> {
@@ -543,7 +553,7 @@ class OptionsApp {
         document.getElementById('saveSettingsBtn')?.addEventListener('click', () => void this.saveSettings());
         document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
             void this.saveProfile().then(() => {
-                void this.renderChart(); // Перерисовываем график после сохранения профиля
+                void this.renderChart();
             });
         });
 
@@ -564,6 +574,9 @@ class OptionsApp {
         });
         document.getElementById('importFile')?.addEventListener('change', (e) => void this.handleImport(e));
         document.getElementById('clearAllBtn')?.addEventListener('click', () => void this.handleClearAll());
+
+        // Кнопка сброса ИИ
+        document.getElementById('clearAiDataBtn')?.addEventListener('click', () => void this.handleClearAiData());
 
         document.getElementById('downloadDiagLogBtn')?.addEventListener('click', () => {
             void this.downloadDiagLog();
