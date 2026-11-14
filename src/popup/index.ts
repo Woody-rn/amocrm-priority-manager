@@ -32,14 +32,21 @@ class PopupApp {
     }
 
     private async loadSettings(): Promise<void> {
-        const result = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
-        const saved = result[STORAGE_KEYS.highlightedStatuses] as string[] | undefined;
+        // Загружаем глобальный профиль
+        const profileRes = await chrome.storage.local.get(STORAGE_KEYS.highlightedStatuses);
+        this.profileStatuses = (profileRes[STORAGE_KEYS.highlightedStatuses] as string[]) || [...STATUS_ORDER, 'wild', 'unknown'];
 
-        // Это наш профиль из настроек
-        this.profileStatuses = saved || [...STATUS_ORDER, 'wild', 'unknown'];
+        // Загружаем локальный фильтр (если он есть)
+        const quickRes = await chrome.storage.local.get(STORAGE_KEYS.quickFilterStatuses);
+        const savedQuick = quickRes[STORAGE_KEYS.quickFilterStatuses] as string[] | undefined;
 
-        // По умолчанию в Popup показываем всё, что есть в профиле
-        this.visibleStatuses = [...this.profileStatuses];
+        if (savedQuick) {
+            // Если локальный фильтр сохранен, используем его (но только те статусы, что есть в профиле)
+            this.visibleStatuses = savedQuick.filter(s => this.profileStatuses.includes(s));
+        } else {
+            // Если нет — показываем всё, что есть в профиле
+            this.visibleStatuses = [...this.profileStatuses];
+        }
     }
 
     private async renderDateGrouping(): Promise<void> {
@@ -62,13 +69,7 @@ class PopupApp {
         const clients = await this.storage.getAllClients();
         container.innerHTML = '';
 
-        // Общий счетчик
-        const total = document.createElement('div');
-        total.className = 'popup-stat-total';
-        total.innerHTML = `<span>Всего клиентов</span><strong>${clients.length}</strong>`;
-        container.appendChild(total);
-
-        // Конфигурация групп
+        // Конфигурация групп (без заголовков и без технических статусов)
         const groups: { statuses: ClientStatus[]; isCold?: boolean }[] = [
             { statuses: ['new'] },
             { statuses: ['hot', 'warm'] },
@@ -120,7 +121,6 @@ class PopupApp {
                     } else {
                         this.visibleStatuses = this.visibleStatuses.filter(s => s !== status);
                     }
-                    // Сохраняем локальный фильтр в отдельное хранилище
                     void this.saveQuickFilter();
                 });
 
@@ -130,6 +130,12 @@ class PopupApp {
             groupEl.appendChild(gridEl);
             container.appendChild(groupEl);
         });
+
+        // ==== ПЕРЕНОСИМ СЧЕТЧИК ВНИЗ ====
+        const total = document.createElement('div');
+        total.className = 'popup-stat-total';
+        total.innerHTML = `<span>Всего клиентов</span><strong>${clients.length}</strong>`;
+        container.appendChild(total);
     }
 
     private async saveQuickFilter(): Promise<void> {

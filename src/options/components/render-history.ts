@@ -7,7 +7,7 @@ export function renderHistory(container: HTMLElement, changelog: ChangelogData):
     section.className = 'help-section';
 
     const title = document.createElement('h2');
-    title.textContent = '📜 История версий';
+    title.textContent = 'История версий';
     section.appendChild(title);
 
     changelog.versions.forEach((v) => {

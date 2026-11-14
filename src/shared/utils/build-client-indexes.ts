@@ -14,7 +14,7 @@ export interface ClientIndexes {
  * Возвращает:
  * - byLeadId — для поиска по ID сделки (основной)
  * - byName — для поиска по названию (fallback)
- * - byCompany — для группировки сделок по одной компании
+ * - byCompany — для группировки сделок по одной компании (ИНН приоритетнее, чем название)
  */
 export function buildClientIndexes(clients: Client[]): ClientIndexes {
     const byLeadId = new Map<string, Client>();
@@ -27,10 +27,19 @@ export function buildClientIndexes(clients: Client[]): ClientIndexes {
         }
         byName.set(client.name, client);
 
-        if (client.parserCompanyName) {
-            const existing = byCompany.get(client.parserCompanyName) || [];
+        // ==== ПРИОРИТЕТ: Сначала ИНН, если нет — название ====
+        let companyKey: string | null = null;
+
+        if (client.originalCompanyINN) {
+            companyKey = `inn_${client.originalCompanyINN}`;
+        } else if (client.parserCompanyName) {
+            companyKey = `name_${client.parserCompanyName.toLowerCase().trim()}`;
+        }
+
+        if (companyKey) {
+            const existing = byCompany.get(companyKey) || [];
             existing.push(client);
-            byCompany.set(client.parserCompanyName, existing);
+            byCompany.set(companyKey, existing);
         }
     }
 

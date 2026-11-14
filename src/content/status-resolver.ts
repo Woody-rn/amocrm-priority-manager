@@ -6,15 +6,6 @@ import type { ClientIndexes } from '../shared/utils/build-client-indexes';
 
 /**
  * Определяет статус клиента для подсветки.
- *
- * Знает про:
- * - Текущую страницу (PageType)
- * - Индексы клиентов (передаются в конструктор)
- *
- * Не знает про:
- * - DOM
- * - StorageService
- * - Способы рендера
  */
 export class StatusResolver {
     constructor(
@@ -52,10 +43,20 @@ export class StatusResolver {
      * Возвращает количество других сделок у этой же компании,
      * но с другим продуктом (воронкой).
      */
-    getOtherDealsCount(parserCompanyName : string | null, currentFunnel: string | null): number {
-        if (!parserCompanyName ) return 0;
+    getOtherDealsCount(client: Client, currentFunnel: string | null): number {
+        if (!client) return 0;
 
-        const deals = this.indexes.byCompany.get(parserCompanyName );
+        // Формируем ключ так же, как в индексах
+        let companyKey: string | null = null;
+        if (client.originalCompanyINN) {
+            companyKey = `inn_${client.originalCompanyINN}`;
+        } else if (client.parserCompanyName) {
+            companyKey = `name_${client.parserCompanyName.toLowerCase().trim()}`;
+        }
+
+        if (!companyKey) return 0;
+
+        const deals = this.indexes.byCompany.get(companyKey);
         if (!deals) return 0;
 
         const currentProduct = this.extractProduct(currentFunnel);
@@ -67,8 +68,7 @@ export class StatusResolver {
     }
 
     /**
-     * Извлекает название продукта из строки воронки (например, "nanoCAD" из "nanoCAD: Продажа").
-     * Если воронка пуста, считаем продукт "unknown".
+     * Извлекает название продукта из строки воронки.
      */
     private extractProduct(funnel: string | null): string {
         if (!funnel) return 'unknown';

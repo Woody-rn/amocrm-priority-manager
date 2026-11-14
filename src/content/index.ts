@@ -178,7 +178,7 @@ class ContentApp {
 
                 if (this.quickFilterStatuses.includes(status)) {
                     const otherDealsCount = client
-                        ? this.resolver.getOtherDealsCount(client.parserCompanyName, client.directionAndFunnel)
+                        ? this.resolver.getOtherDealsCount(client, client.directionAndFunnel)
                         : 0;
 
                     this.highlighter.apply(element, status, client, clientName, otherDealsCount);
@@ -195,7 +195,10 @@ class ContentApp {
 
             const firstEl = elements[0];
             if (!firstEl.dataset.clientName && attempt < 3) {
-                const hasVisible = elements.some(el => el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }));
+                const hasVisible = elements.some(el => el.checkVisibility({
+                    checkOpacity: true,
+                    checkVisibilityCSS: true
+                }));
                 if (hasVisible) {
                     setTimeout(() => this.render(attempt + 1), 300);
                 }
@@ -313,7 +316,11 @@ class ContentApp {
         document.addEventListener('mouseover', (e) => {
             const element = (e.target as HTMLElement).closest('a.js-navigate-link, textarea#person_n') as HTMLElement | null;
             if (element && element.dataset.clientName && element.dataset.status) {
-                this.quickPanel.show(element, element.dataset.clientName, element.dataset.status as ClientStatus, this.quickFilterStatuses);
+                this.quickPanel.show(element,
+                    element.dataset.clientName,
+                    element.dataset.status as ClientStatus,
+                    this.highlightedStatuses // <-- Передаем глобальный профиль, а не локальный фильтр!
+                );
             }
         });
 
@@ -353,8 +360,6 @@ class ContentApp {
     }
 
     private async handleStatusSelect(clientName: string, status: ClientStatus): Promise<void> {
-        if (!this.quickFilterStatuses.includes(status)) return;
-
         const element = Array.from(document.querySelectorAll('a.js-navigate-link, textarea#person_n'))
             .find(el => (el as HTMLElement).dataset.clientName === clientName) as HTMLElement | null;
 

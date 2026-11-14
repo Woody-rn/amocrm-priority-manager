@@ -133,9 +133,9 @@ body::-webkit-scrollbar {
 .popup-stat-total {
     display: flex;
     justify-content: space-between;
-    padding: 4px 6px;
-    border-bottom: 1px solid var(--border-color, #ddd);
-    margin-bottom: 2px;
+    padding: 12px 0 4px 0; /* Отступ сверху */
+    border-top: 1px solid var(--border-color, #ddd); /* Линия сверху */
+    margin-top: 8px; /* Отступ от предыдущего блока */
     font-size: 13px;
     color: var(--text-main, #333);
     font-weight: 600;

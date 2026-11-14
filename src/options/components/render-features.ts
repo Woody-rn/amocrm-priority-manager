@@ -13,7 +13,7 @@ export function renderFeatures(container: HTMLElement): void {
     const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
     const instructionsList = steps.map(step => `<li>${t(step)}</li>`).join('');
     instructionsSection.innerHTML = `
-        <h2>🚀 ${t('helpInstructions')}</h2>
+        <h2>${t('helpInstructions')}</h2>
         <ol class="help-instructions">
             ${instructionsList}
         </ol>
@@ -25,7 +25,7 @@ export function renderFeatures(container: HTMLElement): void {
     logicSection.className = 'help-section';
 
     logicSection.innerHTML = `
-        <h2>🔄 ${t('helpLogic')}</h2>
+        <h2>${t('helpLogic')}</h2>
         <div class="help-logic">
             <div class="help-logic-block">
                 <h4>При открытии страницы «Задачи» (/todo):</h4>
@@ -56,7 +56,7 @@ export function renderFeatures(container: HTMLElement): void {
     statusesSection.className = 'help-section';
 
     const statusesTitle = document.createElement('h2');
-    statusesTitle.textContent = `📊 ${t('statusesTitle')}`;
+    statusesTitle.textContent = `${t('statusesTitle')}`;
     statusesSection.appendChild(statusesTitle);
 
     // 3.1. Пользовательские статусы (по группам)

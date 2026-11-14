@@ -10,7 +10,7 @@ export function renderIntegration(container: HTMLElement): void {
     pagesSection.className = 'help-section';
 
     pagesSection.innerHTML = `
-        <h2>🗺 ${t('integrationPagesTitle')}</h2>
+        <h2>${t('integrationPagesTitle')}</h2>
         <p class="help-tech-intro">${t('integrationPagesIntro')}</p>
 
         <div class="help-tech-item help-tech-item--success">
@@ -72,7 +72,7 @@ export function renderIntegration(container: HTMLElement): void {
     requirementsSection.className = 'help-section';
 
     requirementsSection.innerHTML = `
-        <h2>⚙️ ${t('integrationRequirementsTitle')}</h2>
+        <h2>${t('integrationRequirementsTitle')}</h2>
         <p class="help-tech-intro">${t('integrationRequirementsIntro')}</p>
 
         <div class="help-tech-item help-tech-item--success">
@@ -103,7 +103,7 @@ export function renderIntegration(container: HTMLElement): void {
     lifecycleSection.className = 'help-section';
 
     lifecycleSection.innerHTML = `
-        <h2>🔄 ${t('integrationLifecycleTitle')}</h2>
+        <h2>${t('integrationLifecycleTitle')}</h2>
         <p class="help-tech-intro">${t('integrationLifecycleIntro')}</p>
         <div class="help-logic">
             <div class="help-logic-block">
@@ -124,7 +124,7 @@ export function renderIntegration(container: HTMLElement): void {
     raceSection.className = 'help-section';
 
     raceSection.innerHTML = `
-        <h2>🛡 ${t('integrationRaceTitle')}</h2>
+        <h2>${t('integrationRaceTitle')}</h2>
         <p class="help-tech-intro">${t('integrationRaceDesc')}</p>
         <div class="help-tech-list">
             <div class="help-tech-item help-tech-item--success">
@@ -145,7 +145,7 @@ export function renderIntegration(container: HTMLElement): void {
     markerSection.className = 'help-section';
 
     markerSection.innerHTML = `
-        <h2>🎯 ${t('integrationMarkerTitle')}</h2>
+        <h2>${t('integrationMarkerTitle')}</h2>
         <p class="help-tech-intro">${t('integrationMarkerDesc')}</p>
         <div class="help-tech-list">
             <div class="help-tech-item help-tech-item--info">
@@ -168,7 +168,7 @@ export function renderIntegration(container: HTMLElement): void {
     failuresSection.className = 'help-section';
 
     failuresSection.innerHTML = `
-        <h2>⚠️ ${t('integrationFailuresTitle')}</h2>
+        <h2>⚠${t('integrationFailuresTitle')}</h2>
         <div class="help-tech-list">
             <div class="help-tech-item help-tech-item--danger">
                 <div class="help-tech-header">${t('integrationFailSpinner')}</div>
@@ -195,7 +195,7 @@ export function renderIntegration(container: HTMLElement): void {
     diagSection.className = 'help-section';
 
     diagSection.innerHTML = `
-        <h2>🛠 ${t('integrationDiagTitle')}</h2>
+        <h2>${t('integrationDiagTitle')}</h2>
         <div class="help-tech-item help-tech-item--purple">
             <div class="help-tech-desc">
                 ${t('integrationDiagDesc')}
